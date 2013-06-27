@@ -1,8 +1,9 @@
-
+;~ guiDebug:=1
 pToken := Gdip_Startup()
+Gui, -Caption +ToolWindow
 Gui, Color, ffffff, ffffff
 Gui, Font, s20, OKTOBER
-Gui, Add, Text, hwndhText1,DoMiSo
+Gui, Add, Text, y40 hwndhText1,DoMiSo
 Gui, Font, s14, Zpix C.O.D.E
 Gui, Add, Edit, w240 r12 hwndhEdit1,editer
 ;~ Gui, Add, Button, w100 hwndhButton1 +0xE, BUTTON
