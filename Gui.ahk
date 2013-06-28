@@ -1,17 +1,19 @@
 ;~ guiDebug:=1
 pToken := Gdip_Startup()
-Gui, -Caption +ToolWindow
+Gui, -Caption +ToolWindow +AlwaysOnTop hwndgui_id
 Gui, Color, ffffff, ffffff
 Gui, Font, s20, OKTOBER
-Gui, Add, Text, y40 hwndhText1,DoMiSo
+Gui, Add, Text, y40 w100 h30 hwndhTitle, ;DoMiSo
 Gui, Font, s14, Zpix C.O.D.E
-Gui, Add, Edit, w240 r12 hwndhEdit1,editer
+Gui, Add, Edit, w240 r12 vediter hwndhEdit1, 1=G`nbpm=120`n1 3 5 ( 1 3 5 )
 ;~ Gui, Add, Button, w100 hwndhButton1 +0xE, BUTTON
 Gui, Show, AutoSize
 buttonpicDir:="button\"
-addPicButton("w100 h30",buttonpicDir "b1_up.png",buttonpicDir "b1_over.png",buttonpicDir "b1_down.png")
-addPicButton("xp+140 yp w100 h30",buttonpicDir "b1_up.png",buttonpicDir "b1_over.png",buttonpicDir "b1_down.png")
-Gui, Show, AutoSize
+addPicButton("play","w100 h30",buttonpicDir "b2_up.png",buttonpicDir "b2_over.png",buttonpicDir "b2_down.png")
+addPicButton("exit","xp+140 yp w100 h30",buttonpicDir "b1_up.png",buttonpicDir "b1_over.png",buttonpicDir "b1_down.png")
+addPicButton("exit","x270 y0 w20 h19",buttonpicDir "x_up.png",buttonpicDir "x_over.png",buttonpicDir "x_down.png")
+tabnum:=addPicButton("winMove","x0 y0 w270 h19 gwinMove",buttonpicDir "tab_up.png",buttonpicDir "tab_over.png",buttonpicDir "tab_over.png")
+Gui, Show, w290
 
 OnMessage(0x200, "MouseMove")
 OnMessage(0x201, "MouseDown")
@@ -30,10 +32,18 @@ MouseUp(wParam, lParam, msg, hwnd)
 	MouseUpHwnd:=mhwnd
 ;~ 	MsgBox, Mouse Up %mhwnd%.
 	If(mhwnd)
-	Loop, % buttons["max"]
 	{
-		If(mhwnd = hButton%A_Index%)
-		Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_over, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])
+		Loop, % buttons["max"]
+		{
+			If(mhwnd = hButton%A_Index%)
+			Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_over, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])
+		}
+		If(MouseUpHwnd=MouseDownHwnd)
+		{
+			If(events[MouseUpHwnd]!="")
+			Gosub, % events[MouseUpHwnd]
+		}
+		
 	}
 	Return
 }
@@ -72,11 +82,11 @@ MouseMove(wParam, lParam, msg, hwnd)
 	}
 	_LastButtonData := mhwnd
 ;~ 	ToolTip, % wParam "," lParam "," msg "," hwnd
-	ToolTip, % mhwnd
+;~ 	ToolTip, % mhwnd
 	Return
 }
 
-addPicButton(Option,picUp,picOver,picDown)
+addPicButton(label,Option,picUp,picOver,picDown)
 {
 	global
 	local hwndget,w,h,hdc
@@ -84,6 +94,8 @@ addPicButton(Option,picUp,picOver,picDown)
 	buttonIndex++
 	If(!isObject(buttons))
 	buttons:=Object()
+	If(!isObject(events))
+	events:=Object()
 	Gui, Add, Pic, % Option " hwndhButton" buttonIndex, % "PicButton" buttonIndex
 	Gui, Show, AutoSize
 	pBitmap%buttonIndex%_up:=Gdip_CreateBitmapFromFile(picUp)
@@ -96,7 +108,7 @@ addPicButton(Option,picUp,picOver,picDown)
 	buttons[buttonIndex,"w"]:=w
 	buttons[buttonIndex,"h"]:=h
 	buttons["max"]:=buttonIndex
-;~ 	MsgBox, % buttons[buttonIndex,"w"]
+	events[hwndget]:=label
 	Gdip_DrawImage(G%buttonIndex%, pBitmap%buttonIndex%_up, 0, 0, w, h, 0, 0, w, h)
 	buttonMax:=buttonIndex
 	Return, buttonIndex

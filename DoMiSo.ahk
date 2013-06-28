@@ -5,40 +5,78 @@ SetWorkingDir %A_ScriptDir%
 #Include lib/Music.ahk
 #Include Gui.ahk
 
+pBitmap_Title:=Gdip_CreateBitmapFromFile(buttonpicDir  "title.png")
+hdc:=GetDC(hTitle)
+G := Gdip_GraphicsFromHDC(hdc)
+Gdip_DrawImage(G, pBitmap_Title, 0, 0, 100, 30, 0, 0, 100, 30)
+
+pBitmap%tabnum%_shijiao:=Gdip_CreateBitmapFromFile(buttonpicDir  "tab_shijiao.png")
+OnMessage(0x86,"NCactivate")
+
 txt=
 (
-bpm=120
-1=F#
--5/ -6/ 1 2--/ 3// 2// 1/-// -6// 3-
-0/ -5/ -6/ 1/ 2-- 3// 2// 1/-// 5//- 3/-
+bpm=200
+1=F
+-6/ 5/. 6//-/ 3/- 2/ 1/ 3-- 0/ -6/ 5/. 6//- 3/- 2/ 5/ 3--
 )
 
-base:=60
 baseOffset:=[0,2,4,5,7,9,11]
 
 Notes := new NotePlayer
 Notes.Instrument(1)
 ;~ Notes.Repeat := 1
 ;~ MsgBox, % txt
-Gosub resolution
-
-Notes.Start()
-
 Return
 
+NCactivate(wParam, lParam, msg, hwnd)
+{
+	global
+	If(WinExist("A")=gui_id)
+	{
+	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 270, 19, 0, 0, 270, 19)
+	}
+	Else
+	{
+	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 270, 19, 0, 0, 270, 19)
+	}
+}
+
+play:
+Gui, Submit, NoHide
+txt:=editer
+Gosub resolution
+;~ MsgBox, % output
+Notes.Start()
+Return
+
+Exit:
+ExitApp
+
+winMove:
+PostMessage, 0xA1, 2
+Return
 
 resolution:
+output:=""
+Notes.Reset()
+
+base:=60
+beatTime:=Round(60000/80)
+
 Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 {
-	RegExMatch(A_LoopField,"i)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o)	;解析bpm标记
-	If(o1>0 And o1<480)	; make sure users won't do sth crazy...
-	beatTime:=Round(60000/bpm)
-	Else
-	beatTime:=Round(60000/80)
+	chord:=0	;重置和弦标记
+	chordTime:=0	;重置和弦长度
 	
-	If(RegExMatch(A_LoopField,"i)1=([A-G]\#?\b?)",p))	;解析调号标记
+	If(RegExMatch(A_LoopField,"i)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o))	;解析bpm标记
 	{
-		RegExMatch(NoteData,"i)(\d+)\s" p1,q)
+		If(o1>0 And o1<480)	; make sure users won't do sth crazy...
+		beatTime:=Round(60000/o1)
+	}
+;~ 	MsgBox, % NoteData
+	If(RegExMatch(A_LoopField,"i)1=([A-G]\d?\d?\#?|b?)",p))	;解析调号标记
+	{
+		If(RegExMatch(NoteData,"(\d\d?\d?)\s" p1 "\s",q))
 		base:=q1
 	}
 	
@@ -52,7 +90,7 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 	currentLine:=A_LoopField
 	Loop, Parse, currentLine, %A_Space%%A_Tab%
 	{
-		If(RegExMatch(A_LoopField,"iS)(\-*|\+*)([0-7])(\#|b)?(\/*)((?:(?:\-\/*)|(?:\.))*)\s?$",tune))	;解析音符
+		If(RegExMatch(A_LoopField,"iS)^(\-*|\+*)([0-7])(\#|b)?(\/*)((?:(?:\-\/*)|(?:\.))*)\s?$",tune))	;解析音符
 		{
 			noteTime:=beatTime
 			
@@ -94,8 +132,8 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 					{
 						If InStr(tmp%A_Index%,".")
 						{
-						timeIncrement:=timeIncrement>>1
-						noteTime+=timeIncrement
+							timeIncrement:=timeIncrement>>1
+							noteTime+=timeIncrement
 						}
 						Else
 						{
@@ -106,17 +144,38 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 					Else
 					Break
 				}
+			}
+			If(noteTune>0 or chord=1)
+			{
+				If(!chord)
+				{
+				Notes.Note(noteTune,noteTime,50).Delay(noteTime)
+				output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
+				}
+				Else If(noteTune>0)
+				{
+					Notes.Note(noteTune,noteTime,50)
+					chordTime:=noteTime>chordTime ? noteTime : chordTime
+					output.="Notes.Note(" noteTune "," noteTime ",50)`n"
+				}
+			}
+			Else
+			{
+				Notes.Delay(noteTime)
+				output.="Notes.Delay(" noteTime ")`n"
+			}
 		}
-		If(noteTune>0)
+		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析音符
 		{
-		Notes.Note(noteTune,noteTime,50).Delay(noteTime)
-		output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
-		}
-		Else
-		{
-		Notes.Delay(noteTime)
-		output.="Notes.Delay(" noteTime ")`n"
-		}
+			If(mark1="(" And chord=0)
+			chord:=1
+			Else If(mark1=")" And chord=1)
+			{
+				Notes.Delay(chordTime)
+				chord:=0
+				output.="Notes.Delay(" chordTime ")`n"
+			}
+			
 		}
 	}
 }
