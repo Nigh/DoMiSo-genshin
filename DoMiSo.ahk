@@ -13,12 +13,14 @@ Gdip_DrawImage(G, pBitmap_Title, 0, 0, 100, 30, 0, 0, 100, 30)
 pBitmap%tabnum%_shijiao:=Gdip_CreateBitmapFromFile(buttonpicDir  "tab_shijiao.png")
 OnMessage(0x86,"NCactivate")
 
+/*
 txt=
 (
 bpm=200
 1=F
 -6/ 5/. 6//-/ 3/- 2/ 1/ 3-- 0/ -6/ 5/. 6//- 3/- 2/ 5/ 3--
 )
+*/
 
 baseOffset:=[0,2,4,5,7,9,11]
 
@@ -80,6 +82,15 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 		base:=q1
 	}
 	
+	If(RegExMatch(A_LoopField,"i)rollback=(\d+\.?\d*)",r))	;解析rollback标记
+	{
+		MsgBox, % "rollback=" r1 "`nOffset=" Notes.Offset
+		If(r1*beatTime<=Notes.Offset)
+		Notes.Delay(-r1*beatTime)
+		Else
+		Notes.Offset:=0
+	}
+	
 	/*
 	tune1:音阶
 	tune2:音符
@@ -87,6 +98,7 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 	tune4:本音长
 	tune5:延音长
 	*/
+	
 	currentLine:=A_LoopField
 	Loop, Parse, currentLine, %A_Space%%A_Tab%
 	{

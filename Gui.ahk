@@ -96,7 +96,8 @@ addPicButton(label,Option,picUp,picOver,picDown)
 	buttons:=Object()
 	If(!isObject(events))
 	events:=Object()
-	Gui, Add, Pic, % Option " hwndhButton" buttonIndex, % "PicButton" buttonIndex
+;~ 	Gui, Add, Pic, % Option " hwndhButton" buttonIndex, % "PicButton" buttonIndex
+	Gui, Add, Pic, % Option " hwndhButton" buttonIndex,
 	Gui, Show, AutoSize
 	pBitmap%buttonIndex%_up:=Gdip_CreateBitmapFromFile(picUp)
 	pBitmap%buttonIndex%_over:=Gdip_CreateBitmapFromFile(picOver)
