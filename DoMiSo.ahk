@@ -1,14 +1,15 @@
 debug:=1
 #NoEnv
 SetWorkingDir %A_ScriptDir%
-#Include midi_data.ahk
+#Include data/midi_data.ahk
 #Include lib/Music.ahk
-#Include Gui.ahk
+#Include menu.ahk
+#Include gui.ahk
 
 pBitmap_Title:=Gdip_CreateBitmapFromFile(buttonpicDir  "title.png")
 hdc:=GetDC(hTitle)
 G := Gdip_GraphicsFromHDC(hdc)
-Gdip_DrawImage(G, pBitmap_Title, 0, 0, 100, 30, 0, 0, 100, 30)
+Gdip_DrawImage(G, pBitmap_Title, 0, 0, 340, 30, 0, 0, 340, 30)
 
 pBitmap%tabnum%_shijiao:=Gdip_CreateBitmapFromFile(buttonpicDir  "tab_shijiao.png")
 OnMessage(0x86,"NCactivate")
@@ -24,30 +25,24 @@ bpm=200
 
 baseOffset:=[0,2,4,5,7,9,11]
 
-Notes := new NotePlayer
+Notes := new NotePlayer(2)
 Notes.Instrument(1)
+Gosub, play
 ;~ Notes.Repeat := 1
 ;~ MsgBox, % txt
 Return
 
-NCactivate(wParam, lParam, msg, hwnd)
-{
-	global
-	If(WinExist("A")=gui_id)
-	{
-	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 270, 19, 0, 0, 270, 19)
-	}
-	Else
-	{
-	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 270, 19, 0, 0, 270, 19)
-	}
-}
+#Include menu_label.ahk
 
 play:
 Gui, Submit, NoHide
 txt:=editer
 Gosub resolution
+;~ If debug
+;~ {
 ;~ MsgBox, % output
+;~ Clipboard:=output
+;~ }
 Notes.Start()
 Return
 
@@ -84,11 +79,17 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 	
 	If(RegExMatch(A_LoopField,"i)rollback=(\d+\.?\d*)",r))	;解析rollback标记
 	{
-		MsgBox, % "rollback=" r1 "`nOffset=" Notes.Offset
+;~ 		MsgBox, % "rollback=" r1 "`nOffset=" Notes.Offset
 		If(r1*beatTime<=Notes.Offset)
+		{
 		Notes.Delay(-r1*beatTime)
+		output.="Notes.Delay(" -r1*beatTime ")`n"
+		}
 		Else
+		{
 		Notes.Offset:=0
+		output.="Notes.Offset:=0`n"
+		}
 	}
 	
 	/*
@@ -129,7 +130,8 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 				}
 			}
 			
-			If(tune4!="")	;解析音符长度
+;~ 			If(tune4!="")	;解析基本音符长度
+			If(1)
 			{
 				noteTime:=beatTime>>StrLen(tune4)
 				timeIncrement:=noteTime
@@ -144,7 +146,9 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 					{
 						If InStr(tmp%A_Index%,".")
 						{
+;~ 							MsgBox, % noteTime "`n" timeIncrement
 							timeIncrement:=timeIncrement>>1
+;~ 							MsgBox, % timeIncrement
 							noteTime+=timeIncrement
 						}
 						Else
@@ -177,7 +181,7 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 				output.="Notes.Delay(" noteTime ")`n"
 			}
 		}
-		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析音符
+		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析括号
 		{
 			If(mark1="(" And chord=0)
 			chord:=1
@@ -193,6 +197,22 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 }
 
 Return
+
+
+NCactivate(wParam, lParam, msg, hwnd)
+{
+	global
+	If(WinExist("A")=gui_id)
+	{
+	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 356, 30, 0, 0, 356, 30)
+	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, 34, 30, 0, 0, 34, 30)
+	}
+	Else
+	{
+	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 356, 30, 0, 0, 356, 30)
+	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, 34, 30, 0, 0, 34, 30)
+	}
+}
 
 Callout(Match, CalloutNumber, FoundPos, Haystack, NeedleRegEx)
 {
