@@ -9,7 +9,8 @@ Gui, Add, Edit, w340 r20 vediter hwndhEdit1, 1=G`nbpm=150`n1 3 5 ( 1- 3- 5- )
 Gui, Show, AutoSize
 buttonpicDir:="button\"
 addPicButton("play","w100 h30",buttonpicDir "b2_up.png",buttonpicDir "b2_over.png",buttonpicDir "b2_down.png")
-addPicButton("about","xp+240 yp w100 h30",buttonpicDir "b3_up.png",buttonpicDir "b3_over.png",buttonpicDir "b3_down.png")
+addPicButton("stop","xp+120 w100 h30",buttonpicDir "b4_up.png",buttonpicDir "b4_over.png",buttonpicDir "b4_down.png")
+addPicButton("about","xp+120 yp w100 h30",buttonpicDir "b3_up.png",buttonpicDir "b3_over.png",buttonpicDir "b3_down.png")
 exitnum:=addPicButton("exit","x356 y0 w34 h30",buttonpicDir "x_up.png",buttonpicDir "x_over.png",buttonpicDir "x_down.png")
 tabnum:=addPicButton("winMove","x0 y0 w356 h30 gwinMove",buttonpicDir "tab_up.png",buttonpicDir "tab_over.png",buttonpicDir "tab_over.png")
 Gui, Show, w390
@@ -18,10 +19,26 @@ OnMessage(0x200, "MouseMove")
 OnMessage(0x201, "MouseDown")
 OnMessage(0x203, "MouseDown")
 OnMessage(0x202, "MouseUp")
-
+OnMessage(0x86,"NCactivate")
 ;~ OnMessage(0x202, "MouseLeave")
 ;~ OnMessage(0x2A3, "MouseLeave")
 ;~ hBitmap1:=Gdip_CreateHBITMAPFromBitmap(pBitmap1)
+
+NCactivate(wParam, lParam, msg, hwnd)
+{
+	global
+	If(WinExist("A")=gui_id)
+	{
+	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 356, 30, 0, 0, 356, 30)
+	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, 34, 30, 0, 0, 34, 30)
+	}
+	Else
+	{
+	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 356, 30, 0, 0, 356, 30)
+	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, 34, 30, 0, 0, 34, 30)
+	}
+}
+
 
 MouseUp(wParam, lParam, msg, hwnd)
 {
@@ -29,7 +46,6 @@ MouseUp(wParam, lParam, msg, hwnd)
 	local mhwnd
 	MouseGetPos,,,,mhwnd,2
 	MouseUpHwnd:=mhwnd
-;~ 	MsgBox, Mouse Up %mhwnd%.
 	If(mhwnd)
 	{
 		Loop, % buttons["max"]
@@ -58,7 +74,9 @@ MouseDown(wParam, lParam, msg, hwnd)
 	Loop, % buttons["max"]
 	{
 		If(mhwnd = hButton%A_Index%)
+		{
 		Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_down, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])
+		}
 	}
 	Return
 }
@@ -77,15 +95,24 @@ MouseMove(wParam, lParam, msg, hwnd)
 			If(mhwnd = hButton%tabnum%)
 			{
 			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_down, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
-;~ 			If(_LastButtonData = hButton%exitnum%)
-;~ 			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_down, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
+			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_down, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
+		}
+			Else If(mhwnd = hButton%exitnum%)
+			{
+			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
+			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
 			}
-			If(_LastButtonData = hButton%tabnum%)
+			Else If(_LastButtonData = hButton%tabnum%)
+			{
+			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
 			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
-			
+			}
+			Else If(_LastButtonData = hButton%exitnum%)
+			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
+			Else
 		Loop, % buttons["max"]
 		{
-			If(mhwnd = hButton%A_Index%)	;移入
+			If(mhwnd = hButton%A_Index% And mhwnd != hButton%exitnum%)	;移入
 			Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_over, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])
 			If(_LastButtonData = hButton%A_Index% And _LastButtonData != hButton%exitnum%)	;移出
 			Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_up, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])

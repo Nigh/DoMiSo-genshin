@@ -6,13 +6,15 @@ SetWorkingDir %A_ScriptDir%
 #Include menu.ahk
 #Include gui.ahk
 
+;~ _Instrument:=101	;Harp
+_Instrument:=1	;Piano
 pBitmap_Title:=Gdip_CreateBitmapFromFile(buttonpicDir  "title.png")
 hdc:=GetDC(hTitle)
 G := Gdip_GraphicsFromHDC(hdc)
 Gdip_DrawImage(G, pBitmap_Title, 0, 0, 340, 30, 0, 0, 340, 30)
 
 pBitmap%tabnum%_shijiao:=Gdip_CreateBitmapFromFile(buttonpicDir  "tab_shijiao.png")
-OnMessage(0x86,"NCactivate")
+
 
 /*
 txt=
@@ -26,8 +28,8 @@ bpm=200
 baseOffset:=[0,2,4,5,7,9,11]
 
 Notes := new NotePlayer(2)
-Notes.Instrument(1)
-Gosub, play
+Notes.Instrument(_Instrument)
+;~ Gosub, play
 ;~ Notes.Repeat := 1
 ;~ MsgBox, % txt
 Return
@@ -46,6 +48,10 @@ Gosub resolution
 Notes.Start()
 Return
 
+stop:
+Notes.Reset()
+Return
+
 Exit:
 ExitApp
 
@@ -56,7 +62,7 @@ Return
 resolution:
 output:=""
 Notes.Reset()
-
+Notes.Instrument(_Instrument)
 base:=60
 beatTime:=Round(60000/80)
 
@@ -191,28 +197,12 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 				chord:=0
 				output.="Notes.Delay(" chordTime ")`n"
 			}
-			
 		}
 	}
 }
-
 Return
 
 
-NCactivate(wParam, lParam, msg, hwnd)
-{
-	global
-	If(WinExist("A")=gui_id)
-	{
-	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 356, 30, 0, 0, 356, 30)
-	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, 34, 30, 0, 0, 34, 30)
-	}
-	Else
-	{
-	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 356, 30, 0, 0, 356, 30)
-	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, 34, 30, 0, 0, 34, 30)
-	}
-}
 
 Callout(Match, CalloutNumber, FoundPos, Haystack, NeedleRegEx)
 {
