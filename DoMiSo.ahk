@@ -1,4 +1,4 @@
-debug:=1
+;~ debug:=1
 #NoEnv
 SetWorkingDir %A_ScriptDir%
 #Include data/midi_data.ahk
@@ -6,12 +6,13 @@ SetWorkingDir %A_ScriptDir%
 #Include menu.ahk
 #Include gui.ahk
 
+onTop:=0
 ;~ _Instrument:=101	;Harp
 _Instrument:=1	;Piano
 pBitmap_Title:=Gdip_CreateBitmapFromFile(buttonpicDir  "title.png")
 hdc:=GetDC(hTitle)
 G := Gdip_GraphicsFromHDC(hdc)
-Gdip_DrawImage(G, pBitmap_Title, 0, 0, 340, 30, 0, 0, 340, 30)
+Gdip_DrawImage(G, pBitmap_Title, 0, 0, 340, 30, 0, 0,  340, 30)
 
 pBitmap%tabnum%_shijiao:=Gdip_CreateBitmapFromFile(buttonpicDir  "tab_shijiao.png")
 
@@ -57,6 +58,27 @@ ExitApp
 
 winMove:
 PostMessage, 0xA1, 2
+Return
+
+winPin:
+onTop:=!onTop
+If onTop
+{
+Gui, +AlwaysOnTop
+pBitmap%pinnum%_blue:=pBitmap%pinnum%_pined_blue_
+pBitmap%pinnum%_yellow:=pBitmap%pinnum%_pined_yellow_
+pBitmap%pinnum%_over_yellow:=pBitmap%pinnum%_pined_yellow
+pBitmap%pinnum%_shijiao:=pBitmap%pinnum%_pined_shijiao_
+}
+Else
+{
+Gui, -AlwaysOnTop
+pBitmap%pinnum%_blue:=pBitmap%pinnum%_blue_
+pBitmap%pinnum%_yellow:=pBitmap%pinnum%_yellow_
+pBitmap%pinnum%_over_yellow:=pBitmap%pinnum%_over_yellow_
+pBitmap%pinnum%_shijiao:=pBitmap%pinnum%_shijiao_
+}
+Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_yellow, 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"], 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"])
 Return
 
 resolution:

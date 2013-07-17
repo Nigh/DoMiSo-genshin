@@ -12,7 +12,24 @@ addPicButton("play","w100 h30",buttonpicDir "b2_up.png",buttonpicDir "b2_over.pn
 addPicButton("stop","xp+120 w100 h30",buttonpicDir "b4_up.png",buttonpicDir "b4_over.png",buttonpicDir "b4_down.png")
 addPicButton("about","xp+120 yp w100 h30",buttonpicDir "b3_up.png",buttonpicDir "b3_over.png",buttonpicDir "b3_down.png")
 exitnum:=addPicButton("exit","x356 y0 w34 h30",buttonpicDir "x_up.png",buttonpicDir "x_over.png",buttonpicDir "x_down.png")
-tabnum:=addPicButton("winMove","x0 y0 w356 h30 gwinMove",buttonpicDir "tab_up.png",buttonpicDir "tab_over.png",buttonpicDir "tab_over.png")
+tabnum:=addPicButton("winMove","x30 y0 w326 h30 gwinMove",buttonpicDir "tab_up.png",buttonpicDir "tab_over.png",buttonpicDir "tab_over.png")
+pinnum:=addPicButton("winPin","x0 y0 w30 h30",buttonpicDir "pin2_blue.png",buttonpicDir "pin2_over_yellow.png",buttonpicDir "pin2_pined.png")
+
+pBitmap%pinnum%_blue_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_blue.png")
+pBitmap%pinnum%_yellow_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_yellow.png")
+pBitmap%pinnum%_over_yellow_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_over_yellow.png")
+
+pBitmap%pinnum%_pined_blue_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_pined_blue.png")
+pBitmap%pinnum%_pined_yellow_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_pined_yellow.png")
+
+pBitmap%pinnum%_pined_shijiao_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_pined_shijiao.png")
+pBitmap%pinnum%_shijiao_:=Gdip_CreateBitmapFromFile(buttonpicDir "pin2_shijiao.png")
+
+pBitmap%pinnum%_blue:=pBitmap%pinnum%_blue_
+pBitmap%pinnum%_yellow:=pBitmap%pinnum%_yellow_
+pBitmap%pinnum%_over_yellow:=pBitmap%pinnum%_over_yellow_
+pBitmap%pinnum%_shijiao:=pBitmap%pinnum%_shijiao_
+
 Gui, Show, w390
 
 OnMessage(0x200, "MouseMove")
@@ -29,13 +46,15 @@ NCactivate(wParam, lParam, msg, hwnd)
 	global
 	If(WinExist("A")=gui_id)
 	{
-	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 356, 30, 0, 0, 356, 30)
-	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, 34, 30, 0, 0, 34, 30)
+		Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, 326, 30, 0, 0, 326, 30)
+		Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, 34, 30, 0, 0, 34, 30)
+		Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_blue, 0, 0, 30, 30, 0, 0, 30, 30)
 	}
 	Else
 	{
-	Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 356, 30, 0, 0, 356, 30)
-	Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, 34, 30, 0, 0, 34, 30)
+		Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_shijiao, 0, 0, 326, 30, 0, 0, 326, 30)
+		Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, 34, 30, 0, 0, 34, 30)
+		Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_shijiao, 0, 0, 30, 30, 0, 0, 30, 30)
 	}
 }
 
@@ -58,7 +77,6 @@ MouseUp(wParam, lParam, msg, hwnd)
 			If(events[MouseUpHwnd]!="")
 			Gosub, % events[MouseUpHwnd]
 		}
-		
 	}
 	Return
 }
@@ -73,9 +91,9 @@ MouseDown(wParam, lParam, msg, hwnd)
 	If(mhwnd)
 	Loop, % buttons["max"]
 	{
-		If(mhwnd = hButton%A_Index%)
+		If(mhwnd = hButton%A_Index% And mhwnd != hButton%pinnum%)
 		{
-		Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_down, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])
+			Gdip_DrawImage(G%A_Index%, pBitmap%A_Index%_down, 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"], 0, 0, buttons[A_Index]["w"], buttons[A_Index]["h"])
 		}
 	}
 	Return
@@ -92,24 +110,38 @@ MouseMove(wParam, lParam, msg, hwnd)
 	If(mhwnd != _LastButtonData)	;光标移动到新控件
 	{
 ;~ 		标题栏额外处理
+		If(mhwnd = hButton%tabnum%
+		Or mhwnd = hButton%exitnum%
+		Or mhwnd = hButton%pinnum%)
+		{
+			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_down, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
 			If(mhwnd = hButton%tabnum%)
 			{
-			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_down, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
-			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_down, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
-		}
+				Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_down, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
+				Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_yellow, 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"], 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"])
+			}
+			Else If(mhwnd = hButton%pinnum%)
+			{
+				Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_over_yellow, 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"], 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"])
+				Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_down, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
+			}
 			Else If(mhwnd = hButton%exitnum%)
 			{
-			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
-			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
+				Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_over, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
+				Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
+				Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_blue, 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"], 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"])
 			}
-			Else If(_LastButtonData = hButton%tabnum%)
-			{
+		}
+		Else If(_LastButtonData = hButton%tabnum%
+		Or _LastButtonData = hButton%exitnum%
+		Or _LastButtonData = hButton%pinnum%)
+		{
+			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
 			Gdip_DrawImage(G%tabnum%, pBitmap%tabnum%_up, 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"], 0, 0, buttons[tabnum]["w"], buttons[tabnum]["h"])
-			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
-			}
-			Else If(_LastButtonData = hButton%exitnum%)
-			Gdip_DrawImage(G%exitnum%, pBitmap%exitnum%_up, 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"], 0, 0, buttons[exitnum]["w"], buttons[exitnum]["h"])
-			Else
+			Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_blue, 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"], 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"])
+			
+		}
+		Else
 		Loop, % buttons["max"]
 		{
 			If(mhwnd = hButton%A_Index% And mhwnd != hButton%exitnum%)	;移入
