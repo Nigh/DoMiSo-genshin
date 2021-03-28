@@ -1,58 +1,168 @@
-;~ debug:=1
-#NoEnv
+﻿
+debug:=1
+#SingleInstance force
+SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
+SetKeyDelay, 1, 1 
+SendMode event 
+
 #Include data/midi_data.ahk
 #Include lib/Music.ahk
 #Include menu.ahk
-#Include gui.ahk
 
-onTop:=0
-;~ _Instrument:=101	;Harp
-_Instrument:=1	;Piano
-pBitmap_Title:=Gdip_CreateBitmapFromFile(buttonpicDir  "title.png")
-hdc:=GetDC(hTitle)
-G := Gdip_GraphicsFromHDC(hdc)
-Gdip_DrawImage(G, pBitmap_Title, 0, 0, 340, 30, 0, 0,  340, 30)
+isBtn1Playing:=False
+isBtn2Playing:=False
 
-pBitmap%tabnum%_shijiao:=Gdip_CreateBitmapFromFile(buttonpicDir  "tab_shijiao.png")
+_Instrument:=10
+DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
+baseOffset := [0,2,4,5,7,9,11]
 
-/*
-txt=
-(
-bpm=200
-1=F
--6/ 5/. 6//-/ 3/- 2/ 1/ 3-- 0/ -6/ 5/. 6//- 3/- 2/ 5/ 3--
-)
-*/
-
-baseOffset:=[0,2,4,5,7,9,11]
-
-Notes := new NotePlayer(2)
+Notes := new NotePlayer()
 Notes.Instrument(_Instrument)
 ;~ Gosub, play
 ;~ Notes.Repeat := 1
 ;~ MsgBox, % txt
+; q w e r t y u
+; a s d f g h j
+; z x c v b n m
+genshin_note_map := { 48:"z"
+, 50:"x"
+, 52:"c"
+, 53:"v"
+, 55:"b"
+, 57:"n"
+, 59:"m"
+, 60:"a"
+, 62:"s"
+, 64:"d"
+, 65:"f"
+, 67:"g"
+, 69:"h"
+, 71:"j"
+, 72:"q"
+, 74:"w"
+, 76:"e"
+, 77:"r"
+, 79:"t"
+, 81:"y"
+, 83:"u" }
+#Include gui.ahk
+Gui, Submit, NoHide
+txt:=editer
+Gosub resolution
+Notes.Start()
+Return
+
+titleMove:
+PostMessage 0xA1, 2
 Return
 
 #Include menu_label.ahk
 
-play:
-Gui, Submit, NoHide
-txt:=editer
-Gosub resolution
-;~ If debug
-;~ {
-;~ MsgBox, % output
-;~ Clipboard:=output
-;~ }
-Notes.Start()
+genshin_array_sort(ByRef array)
+{
+	array_string:=""
+	For index, v in array
+	{
+		array_string .= v.delay "," v.note "`n"
+	}
+	Sort, array_string, N
+	array:={}
+	Loop, Parse, array_string, `n
+	{
+		if(RegExMatch(A_LoopField, "O)(\d+),(\w)", note))
+		{
+			array.Push({"delay":note[1], "note":note[2]})
+		}
+		
+	}
+	; MsgBox, % array_string
+}
+
+genshin_main:
+if(genshin_play_p > genshin_play_array.Length())
+{
+	isBtn1Playing:=False
+	btn1update()
+	SetTimer, genshin_main, Off
+	Return
+}
+DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
+IfWinNotActive, ahk_exe YuanShen.exe
+WinActivate, ahk_exe YuanShen.exe
+While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay)
+{
+	Send, % genshin_play_array[genshin_play_p].note
+	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe YuanShen.exe
+	genshin_play_p += 1
+}
 Return
 
-stop:
-Notes.Reset()
+genshin_play()
+{
+	global startTime, freq, genshin_play_p
+	genshin_play_p := 1
+	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
+	WinActivate, ahk_exe YuanShen.exe
+	WinWaitActive, ahk_exe YuanShen.exe,, 0
+	if(ErrorLevel==1)
+	{
+		MsgBox, Genshin is not running!!!
+		Return
+	}
+	isBtn1Playing:=True
+	btn1update()
+	startTime:=nowTime//(freq/1000) + 500
+	SetTimer, genshin_main, 5 
+}
+
+genshin_stop()
+{
+	isBtn1Playing:=False
+	btn1update()
+	SetTimer, genshin_main, Off
+}
+
+func_btn_play:
+if(!isBtn1Playing)
+{
+	Gui, Submit, NoHide
+	txt:=editer
+	Gosub resolution
+	genshin_array_sort(genshin_play_array)
+	Gosub, func_btn_try_stop
+	genshin_play()
+}
+Else
+{
+	genshin_stop()
+}
 Return
 
+func_btn_try_stop:
+	Notes.Reset()
+	isBtn2Playing:=False
+	btn2update()
+Return
+
+func_btn_try:
+if(!isBtn2Playing)
+{
+	Gui, Submit, NoHide
+	txt:=editer
+	Gosub resolution
+	Notes.Start()
+	isBtn2Playing:=True
+	btn2update()
+}
+Else
+{
+	Gosub, func_btn_try_stop
+}
+Return
+
+func_btn_exit:
 Exit:
 ExitApp
 
@@ -60,28 +170,11 @@ winMove:
 PostMessage, 0xA1, 2
 Return
 
-winPin:
-onTop:=!onTop
-If onTop
-{
-Gui, +AlwaysOnTop
-pBitmap%pinnum%_blue:=pBitmap%pinnum%_pined_blue_
-pBitmap%pinnum%_yellow:=pBitmap%pinnum%_pined_yellow_
-pBitmap%pinnum%_over_yellow:=pBitmap%pinnum%_pined_yellow
-pBitmap%pinnum%_shijiao:=pBitmap%pinnum%_pined_shijiao_
-}
-Else
-{
-Gui, -AlwaysOnTop
-pBitmap%pinnum%_blue:=pBitmap%pinnum%_blue_
-pBitmap%pinnum%_yellow:=pBitmap%pinnum%_yellow_
-pBitmap%pinnum%_over_yellow:=pBitmap%pinnum%_over_yellow_
-pBitmap%pinnum%_shijiao:=pBitmap%pinnum%_shijiao_
-}
-Gdip_DrawImage(G%pinnum%, pBitmap%pinnum%_yellow, 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"], 0, 0, buttons[pinnum]["w"], buttons[pinnum]["h"])
-Return
-
 resolution:
+genshin_play_array:={}
+genshin_output:=""
+genshin_delay:=0
+
 output:=""
 Notes.Reset()
 Notes.Instrument(_Instrument)
@@ -95,7 +188,7 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 	
 	If(RegExMatch(A_LoopField,"i)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o))	;解析bpm标记
 	{
-		If(o1>0 And o1<480)	; make sure users won't do sth crazy...
+		If(o1>0 And o1<480)
 		beatTime:=Round(60000/o1)
 	}
 ;~ 	MsgBox, % NoteData
@@ -110,13 +203,15 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 ;~ 		MsgBox, % "rollback=" r1 "`nOffset=" Notes.Offset
 		If(r1*beatTime<=Notes.Offset)
 		{
-		Notes.Delay(-r1*beatTime)
-		output.="Notes.Delay(" -r1*beatTime ")`n"
+			Notes.Delay(-r1*beatTime)
+			output.="Notes.Delay(" -r1*beatTime ")`n"
+			genshin_delay -= r1*beatTime
 		}
 		Else
 		{
-		Notes.Offset:=0
-		output.="Notes.Offset:=0`n"
+			Notes.Offset:=0
+			output.="Notes.Offset:=0`n"
+			genshin_delay := 0
 		}
 	}
 	
@@ -145,14 +240,13 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 			}
 			Else offs:=0
 			
-			noteTune:=base+baseOffset[tune2]+offs*12	;解析基本音
+			noteTune:=base+baseOffset[tune2+0]+offs*12	;解析基本音
 			
 			If(tune3!="")	;解析升降调
 			{
 				If InStr(tune3, "#"){
 					noteTune+=1
 				}
-				
 				Else If InStr(tune3, "b"){
 					noteTune-=1
 				}
@@ -193,20 +287,26 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 			{
 				If(!chord)
 				{
-				Notes.Note(noteTune,noteTime,50).Delay(noteTime)
-				output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
+					Notes.Note(noteTune,noteTime,50).Delay(noteTime)
+					output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
+					genshin_output.="[" genshin_delay "]-(" genshin_note_map[noteTune] ")`n"
+					genshin_play_array.Push({"delay":genshin_delay,"note":genshin_note_map[noteTune]})
+					genshin_delay += noteTime
 				}
 				Else If(noteTune>0)
 				{
 					Notes.Note(noteTune,noteTime,50)
 					chordTime:=noteTime>chordTime ? noteTime : chordTime
 					output.="Notes.Note(" noteTune "," noteTime ",50)`n"
+					genshin_output.="[" genshin_delay "]-(" genshin_note_map[noteTune] ")`n"
+					genshin_play_array.Push({"delay":genshin_delay,"note":genshin_note_map[noteTune]})
 				}
 			}
 			Else
 			{
 				Notes.Delay(noteTime)
 				output.="Notes.Delay(" noteTime ")`n"
+				genshin_delay += noteTime
 			}
 		}
 		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析括号
@@ -218,28 +318,22 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 				Notes.Delay(chordTime)
 				chord:=0
 				output.="Notes.Delay(" chordTime ")`n"
+				genshin_delay += chordTime
 			}
 		}
 	}
 }
 Return
 
-
-
-Callout(Match, CalloutNumber, FoundPos, Haystack, NeedleRegEx)
-{
-	MsgBox, % Match "`n" FoundPos
-}
-
-notez(n,offs=0)
-{
-	global
-	Return, base+baseOffset[n]+offs*12
-}
-
 GuiClose:
 ExitApp
 
 #If debug
 F5::ExitApp
+F6::Reload
+F7::
+genshin_play()
+WinActivate, ahk_exe YuanShen.exe
+Return
 #If
+F8::genshin_stop()
