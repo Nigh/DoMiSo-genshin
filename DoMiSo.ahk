@@ -1,5 +1,5 @@
 ﻿
-debug:=1
+debug:=0
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
