@@ -11,6 +11,10 @@ gitee托管：https://gitee.com/xianii/domiso
 
 任何由于使用本软件对第三方所造成的侵害均由使用者本人负责。
 
+## 界面
+
+![](assets/screenshot.png)
+
 使用说明
 ------------------
 - 右键使用管理员权限打开本软件
