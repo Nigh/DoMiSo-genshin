@@ -1,4 +1,4 @@
-Menu, Tray, NoStandard
+﻿Menu, Tray, NoStandard
 
 Menu, Tray, Add, 显示窗体, show
 Menu, Tray, Add, 关于, about
