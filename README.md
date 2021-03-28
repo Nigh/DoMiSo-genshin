@@ -1,8 +1,8 @@
 DoMiSo 简谱解释器 说明文档
 ==================
 
-github托管：https://github.com/Nigh/DoMiSo
-gitee托管：https://gitee.com/xianii/domiso
+- github托管：https://github.com/Nigh/DoMiSo
+- gitee托管：https://gitee.com/xianii/domiso
 
 特别版规约
 ------------------
