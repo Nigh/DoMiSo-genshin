@@ -1,4 +1,4 @@
-NoteData = 
+﻿NoteData = 
 (
 0 C0
 1 C0#

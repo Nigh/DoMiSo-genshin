@@ -1,4 +1,4 @@
-;~ guiDebug:=1
+﻿;~ guiDebug:=1
 pToken := Gdip_Startup()
 sample_sheet =
 (
@@ -37,14 +37,14 @@ ui.fgcolor:=0xffd2d4d3
 Gui, -Caption -DPIScale -AlwaysOnTop -Owner hwndgui_id
 Gui, Color, % ui.fgcolor, % ui.bgcolor
 Gui, Add, pic, x0 y0 w1 h1 0xE hwndhBg, 
-Gui, Add, pic, % "x" ui.title.pos.x " y" ui.title.pos.y " w" ui.title.size.w " h" ui.title.size.h " gtitleMove 0xE hwndhTitle", 
+Gui, Add, pic, % "x" ui.title.pos.x " y" ui.title.pos.y " w" ui.title.size.w " h" ui.title.size.h " 0xE hwndhTitle", 
 Gui, Add, pic, % "x" ui.ver.pos.x " y" ui.ver.pos.y " w" ui.ver.size.w " h" ui.ver.size.h " 0xE hwndhVer", 
 edit_y:=3.5*ui_gap
 edit_height:=ui.size.h-edit_y-ui.button1.size.h-2*ui_gap
 Gui, Add, Edit, x30 y%edit_y% w440 h%edit_height% vediter hwndhEdit1, % sample_sheet
-Gui, Add, pic, % "x" ui.button1.pos.x " y" ui.button1.pos.y " w" ui.button1.size.w " h" ui.button1.size.h " 0xE hwndhBtn1 gfunc_btn_play", 
-Gui, Add, pic, % "x" ui.button2.pos.x " y" ui.button2.pos.y " w" ui.button2.size.w " h" ui.button2.size.h " 0xE hwndhBtn2 gfunc_btn_try", 
-Gui, Add, pic, % "x" ui.button3.pos.x " y" ui.button3.pos.y " w" ui.button3.size.w " h" ui.button3.size.h " 0xE hwndhBtn3 gfunc_btn_exit", 
+Gui, Add, pic, % "x" ui.button1.pos.x " y" ui.button1.pos.y " w" ui.button1.size.w " h" ui.button1.size.h " vbtn1 0xE hwndhBtn1 gfunc_btn_play", 
+Gui, Add, pic, % "x" ui.button2.pos.x " y" ui.button2.pos.y " w" ui.button2.size.w " h" ui.button2.size.h " vbtn2 0xE hwndhBtn2 gfunc_btn_try", 
+Gui, Add, pic, % "x" ui.button3.pos.x " y" ui.button3.pos.y " w" ui.button3.size.w " h" ui.button3.size.h " vbtn3 0xE hwndhBtn3 gfunc_btn_exit", 
 ; Gui, Add, pic, % "x" ui.button4.pos.x " y" ui.button4.pos.y " w" ui.button4.size.w " h" ui.button4.size.h " 0xE hwndhBtn4", 
 Gui, Show, % "w" ui.size.w " h" ui.size.h
 
@@ -93,6 +93,9 @@ MouseDown(wParam, lParam, msg, hwnd)
 	global
 	local mhwnd
 	MouseGetPos,,,,mhwnd,2
+	if (msg=513)
+		if A_GuiControl not in editer,btn1,btn2,btn3
+			PostMessage, 0xA1, 2,,, A
 }
 
 btn1update()
@@ -141,10 +144,10 @@ MouseMove(wParam, lParam, msg, hwnd)
 {
 	Global
 	local mhwnd
-	If(WinExist("A")!=gui_id)
-	Return
-	MouseGetPos,,,,mhwnd,2
 	Static _LastButtonData = true
+	If(WinExist("A")!=gui_id)
+		Return
+	MouseGetPos,,,,mhwnd,2
 	If(mhwnd != _LastButtonData)	;光标移动到新控件
 	{
 		btn_release(_LastButtonData)
