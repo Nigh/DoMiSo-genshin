@@ -1,0 +1,52 @@
+
+此键盘谱为简谱转换得到
+
++0/ e/ w/ q/ q/ g/ q/ g/ | q w q/ w/ e/ r/ | e w/ q/ q t/ q/
+q t/ q/ q h | g/ e/ w/ q/ q/ g/ q/ g/
+ q w q/ w/ e/ r/ | w/ e/ w/ q/ q t/ q/ |
+ q t/ q/ q w | q +0 +0/ t// e// e// e// e/ | w/ e// w/ q// q// +0// +0/ t// e// e// e// e/
+ w/ e// r/ e// q/ +0/ h/ q/ w/ | r/ e/ q/ q/ +0 +0
+
++0 +0 +0/ q// q// q// q// e/ | q// q// q// q// e/ +0 q// q// q// q// e/
+q// q// q// q// e/ +0 q// q// q// q// e/ | q// q// q// q// e/ +0/ +0 +0
++0 +0 +0/ q// q// q// q// e/ | q// q// q// q// e/ +0 q// q// q// q// e/
+q// q// q// q// e/ +0 q// q// q// q// e/ | q// q// q// q// e/ +0/ +0 +0
++0/ e/ w/ q/ q/ g/ q/ g/ | q w q/ w/ e/ r/
+e w/ q/ q t/ q/ | q t/ q/ q h
+g/ e/ w/ q/ q/ g/ q/ g/ | q w q/ w/ e/ r/
+w/ e/ w/ q/ q t/ q/ | q t/ q/ q w 
+q +0 +0 +0/ 
+
+
+a// n//
+a/ n/ s/ d/ 0 0/ d// s// | d/ s/ j/ q/ 0 0/ a// n//
+a/ a/ a/ s/ d/ f/ d/ f/ | g/ a/ a 0 0/ a// n//
+a/ n// n/ s// d/ 0 0/ d// s// | d/ d// d/ j// q/ 0 0/ a// n//
+a/ n// a/ n// a/ 0 0 | 
+
+
++0/ e/ w/ q/ q/ g/ q/ g/
+q w q/ w/ e/ r/ | e/ q/ w/ q/ q t/ q/
+q t/ q/ q h | g/ e/ w/ q/ q/ g/ q/ g/
+q w q/ w/ e/ r/ | w/ e/ w/ q/ q t/ q/
+q w q +0 | +0 +0/ g q.
+w e r. t// r// | e w e. r// e//
+w q w h | +0 q- q/. w//
++0/ j h g. | +0 +0 +0 +0
++0/ e/ w/ q/ q/ t/ q/ t/ | q w q/ w/ e/ r/
+e w/ q/ q t/ q/ | q t/ q/ q h | g/ e/ w/ q/ q/ g/ q/ g/
+q w q/ w/ e/ r/ | w/ e/ w/ w/ q. q/
+t/ r/ e/ q/ q w | q +0 +0/ e/ w/ q/
+q/ g/ q/ g/ q w | q/ w/ e/ r/ e w/ q/
+
+q t/ q/ q t/ q/ | q h g/ e/ w/ q/
+q/ g/ q/ g/ q w | q/ w/ e/ r/ w/ e/ w/ q/
+q t/ q/ q t/ q/ | q w q/ e/ w/ q/
+q/ g/ q/ g/ q w | q/ w/ e/ r/ e w/ q/
+q t/ q/ q t/ q/ | q h g/ e/ w/ q/
+q/ g/ q/ g/ q w | q/ w/ e/ r/ w/ e/ w/ q/
+q t q w | q +0 +0/ e/ w/ q/
+q/ g/ q/ g/ q w | q/ w/ e/ r/ e w/ q/
+q t/ q/ q t/ q/ | q h g/ e/ w/ q/
+q/ g/ q/ g/ q w | q/ w/ e/ r/ w/ e/ w/ q/
+q t q w | q +0 +0 +0
