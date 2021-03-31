@@ -95,8 +95,8 @@ if (ishardcore=1) and StrLen(genshin_play_array[genshin_play_p])>1
 Else
 {
 	SendInput, % genshin_play_array[genshin_play_p]
-	KeyWait, % SubStr(_thishotkey, 0)
 	genshin_play_p+=1
+	KeyWait, % SubStr(_thishotkey, 0)
 }
 if(genshin_play_p > genshin_play_array.Length())
 {
