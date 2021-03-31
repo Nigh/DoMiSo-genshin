@@ -25,7 +25,7 @@ ui.button2.pos:={x:ui_gap+ui.button1.size.w+ui.button1.pos.x,y:ui.button1.pos.y}
 ui.button2.size:={w:ui.button1.size.w,h:ui.button1.size.h}
 ui.hatch:=50
 ui.bgcolor:=0xffdcdcdc
-ui.fgcolor:=0xff92b4d3
+ui.fgcolor:=0xffd2d4d3
 Gui, -Caption -DPIScale -AlwaysOnTop -Owner hwndgui_id
 Gui, Color, % ui.fgcolor, % ui.bgcolor
 Gui, Add, pic, x0 y0 w1 h1 0xE hwndhBg, 
@@ -43,7 +43,7 @@ Gui, Add, pic, % "x" ui.button2.pos.x " y" ui.button2.pos.y " w" ui.button2.size
 Gui, Show, % "w" ui.size.w " h" ui.size.h
 
 hBitmap:={}
-hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFF444444 S48 Left")
+hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFF7799CC S48 Left")
 hBitmap.genshin:=hBitmapBy2ColorAndText(ui.ver.size.w,ui.ver.size.h,ui.fgcolor,"Genshin.0.3M`n@github.com/Nigh","cFF666666 S14 Right")
 
 hBitmap.button1:=hBitmapByBorderHatchAndText(ui.button1.size.w,ui.button1.size.h, 0xffad395c,2,ui.fgcolor,ui.bgcolor,ui.hatch,"Play")
