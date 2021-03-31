@@ -331,9 +331,8 @@ ExitApp
 #If debug
 F5::ExitApp
 F6::Reload
-F7::
-genshin_play()
-WinActivate, ahk_exe YuanShen.exe
-Return
+F7::Gosub, func_btn_play
 #If
-F8::genshin_stop()
+F8::Gosub, func_btn_play
+
+
