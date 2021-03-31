@@ -1,4 +1,4 @@
-﻿
+
 debug:=0
 #SingleInstance force
 SetBatchLines, -1
@@ -133,10 +133,6 @@ if(!isBtn1Playing)
 	genshin_array_sort(genshin_play_array)
 	Gosub, func_btn_try_stop
 	genshin_play()
-}
-Else
-{
-	genshin_stop()
 }
 Return
 
@@ -333,6 +329,7 @@ F5::ExitApp
 F6::Reload
 F7::Gosub, func_btn_play
 #If
-F8::Gosub, func_btn_play
+F8::genshin_stop()
+F9::Gosub, func_btn_play
 
 
