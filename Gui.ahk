@@ -1,4 +1,4 @@
-;~ guiDebug:=1
+﻿;~ guiDebug:=1
 pToken := Gdip_Startup()
 sample_sheet =
 (
@@ -49,8 +49,8 @@ Gui, Add, pic, % "x" ui.button3.pos.x " y" ui.button3.pos.y " w" ui.button3.size
 Gui, Show, % "w" ui.size.w " h" ui.size.h
 
 hBitmap:={}
-hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFF444444 S48 Left")
-hBitmap.genshin:=hBitmapBy2ColorAndText(ui.ver.size.w,ui.ver.size.h,ui.fgcolor,"Genshin.ver`n@github.com/Nigh","cFF666666 S14 Right")
+hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFFCC9999 S48 Left")
+hBitmap.genshin:=hBitmapBy2ColorAndText(ui.ver.size.w,ui.ver.size.h,ui.fgcolor,"Genshin.0.3A`n@github.com/Nigh","cFF666666 S14 Right")
 
 hBitmap.button1:=hBitmapByBorderHatchAndText(ui.button1.size.w,ui.button1.size.h, 0xffad395c,2,ui.fgcolor,ui.bgcolor,ui.hatch,"Play")
 hBitmap.button1Hover:=hBitmapByBorderHatchAndText(ui.button1.size.w,ui.button1.size.h, 0xffad395c,8,0xffad395c,ui.bgcolor,38,"Play")
