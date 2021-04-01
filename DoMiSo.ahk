@@ -1,4 +1,4 @@
-
+﻿
 debug:=0
 #SingleInstance force
 SetBatchLines, -1
@@ -10,8 +10,8 @@ SendMode event
 #Include lib/Music.ahk
 #Include menu.ahk
 
-isBtn1Playing:=False
-isBtn2Playing:=False
+isBtn1Playing:=0
+isBtn2Playing:=0
 
 _Instrument:=10
 DllCall("QueryPerformanceFrequency", "Int64P", freq)
@@ -83,7 +83,7 @@ genshin_array_sort(ByRef array)
 genshin_main:
 if(genshin_play_p > genshin_play_array.Length())
 {
-	isBtn1Playing:=False
+	isBtn1Playing:=0
 	btn1update()
 	SetTimer, genshin_main, Off
 	Return
@@ -101,7 +101,7 @@ Return
 
 genshin_play()
 {
-	global startTime, freq, genshin_play_p
+	global startTime, freq, genshin_play_p, isBtn1Playing
 	genshin_play_p := 1
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 	WinActivate, ahk_exe YuanShen.exe
@@ -111,7 +111,7 @@ genshin_play()
 		MsgBox, Genshin is not running!!!
 		Return
 	}
-	isBtn1Playing:=True
+	isBtn1Playing:=1
 	btn1update()
 	startTime:=nowTime//(freq/1000) + 500
 	SetTimer, genshin_main, 5 
@@ -119,7 +119,8 @@ genshin_play()
 
 genshin_stop()
 {
-	isBtn1Playing:=False
+	global
+	isBtn1Playing:=0
 	btn1update()
 	SetTimer, genshin_main, Off
 }
@@ -138,7 +139,7 @@ Return
 
 func_btn_try_stop:
 	Notes.Reset()
-	isBtn2Playing:=False
+	isBtn2Playing:=0
 	btn2update()
 Return
 
@@ -149,7 +150,7 @@ if(!isBtn2Playing)
 	txt:=editer
 	Gosub resolution
 	Notes.Start()
-	isBtn2Playing:=True
+	isBtn2Playing:=1
 	btn2update()
 }
 Else
