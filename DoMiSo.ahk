@@ -1,4 +1,4 @@
-﻿
+
 debug:=0
 #SingleInstance force
 SetBatchLines, -1
@@ -309,7 +309,10 @@ Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
 		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析括号
 		{
 			If(mark1="(" And chord=0)
-			chord:=1
+			{
+				chord:=1
+				chordTime:=0
+			}
 			Else If(mark1=")" And chord=1)
 			{
 				Notes.Delay(chordTime)
