@@ -15,8 +15,8 @@ ui.title:={}
 ui.title.pos:={x:ui_gap,y:ui_gap}
 ui.title.size:={w:ui.size.w-2*ui.title.pos.x,h:48}
 ui.ver:={}
-ui.ver.pos:={x:ui.size.w//2-ui_gap,y:1.8*ui_gap}
-ui.ver.size:={w:ui.size.w//2,h:35}
+ui.ver.pos:={x:ui.size.w-ui.size.w//3-ui_gap,y:1.8*ui_gap}
+ui.ver.size:={w:ui.size.w//3,h:35}
 button_count:=3
 ui.button_h:=56
 ui.button1:={}
@@ -49,8 +49,15 @@ Gui, Add, pic, % "x" ui.button3.pos.x " y" ui.button3.pos.y " w" ui.button3.size
 Gui, Show, % "w" ui.size.w " h" ui.size.h
 
 hBitmap:={}
-hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFFCC9999 S48 Left")
-hBitmap.genshin:=hBitmapBy2ColorAndText(ui.ver.size.w,ui.ver.size.h,ui.fgcolor,"Genshin.0.31A`n@github.com/Nigh","cFF666666 S14 Right")
+if debug
+{
+	hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DEBUG","bold cFFCC9999 S48 Left")
+}
+Else
+{
+	hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFFCC9999 S48 Left")
+}
+hBitmap.genshin:=hBitmapBy2ColorAndText(ui.ver.size.w,ui.ver.size.h,ui.fgcolor,"Genshin.0.32A`n@github.com/Nigh","cFF666666 S14 Right")
 
 hBitmap.button1:=hBitmapByBorderHatchAndText(ui.button1.size.w,ui.button1.size.h, 0xffad395c,2,ui.fgcolor,ui.bgcolor,ui.hatch,"Play")
 hBitmap.button1Hover:=hBitmapByBorderHatchAndText(ui.button1.size.w,ui.button1.size.h, 0xffad395c,8,0xffad395c,ui.bgcolor,38,"Play")

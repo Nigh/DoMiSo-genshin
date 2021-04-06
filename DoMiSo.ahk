@@ -1,5 +1,9 @@
-
+﻿
+if A_IsCompiled
 debug:=0
+Else
+debug:=1
+
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
@@ -149,6 +153,7 @@ if(!isBtn2Playing)
 	Gui, Submit, NoHide
 	txt:=editer
 	Gosub resolution
+	; Clipboard:=output
 	Notes.Start()
 	isBtn2Playing:=1
 	btn2update()
@@ -331,7 +336,6 @@ ExitApp
 #If debug
 F5::ExitApp
 F6::Reload
-F7::Gosub, func_btn_play
 #If
 F8::genshin_stop()
 F9::Gosub, func_btn_play
