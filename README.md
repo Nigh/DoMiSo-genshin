@@ -1,6 +1,9 @@
 DoMiSo 简谱解释器 说明文档
 ==================
 
+## [English](README_en.md)
+## [简体中文](README.md)
+
 - github托管：https://github.com/Nigh/DoMiSo
 - gitee托管：https://gitee.com/xianii/domiso
 
@@ -164,7 +167,7 @@ RollBack示例
     rollback=7 ;回滚7拍
     -1 -2 -3 -4 -5 -6 -7 ;低音声部
 
-rollback命令效果演示：
+rollback命令动画演示：
 
 ![](assets/rollback.gif)
 
