@@ -1,14 +1,20 @@
+
 1=C
 
-;注意：此谱未适配原神，有大量音符无法演奏。
+;注意：此谱未适配原神，有大量音符无法在游戏中演奏。
+;Note: This score is not adapted to the Genshin Impact and has a large number of notes that cannot be played in the game.
 
 ;右手高音声部
+;right-hand soprano
 0 0 0 | 0 0 0 | 5 +2. 5/ |
 ;所有非音符字符都会被忽略。
+;All non-note characters will be ignored.
 4# +2. +2/ | +3 +2 +1 | +2- +3/ +4#/ |
 ;所以可以用各种符号来分隔小节。比如这里用的[|]竖线。
+;So various symbols can be used to separate subsections. For example, the [|] vertical line is used here.
 ( +2 +5 ) +4# +3 | +2 +5 5/ 6/ | 7. +3/ 7/ 5/ |
 ;或者是用来注释。
+;Or it is used for comments.
 6-- | 5 +2. 5/ | 4# +2. +2/ |
 +3 +2 +1 | +2- +3/ +4#/ | ( +2 +6 ) +4# +3 |
 +2 +5 +7 | ++1. ++1/ +7/ +6/ | +5-- |
@@ -20,8 +26,12 @@
 ( +2 +5 ) +4# +3 | +2 +5 +6 | ( +5 +7 ) ( +6 ++1 ) +7/ +6/ |
 ( +5-- ++5-- ) | 0 0 0 |
 
-rollback=9999	;指定一个足够大的值来直接回滚到开头
+;指定一个足够大的值来直接回滚到开头
+;Specify a value large enough to roll back directly to the beginning
+rollback=9999
+
 ;左手低音声部
+;Left-handed bass
 --5/ -2/ -5/ -7/ -5/ -2/ | --5/ -2/ -5/ -7/ -5/ -2/ | --5/ -2/ -5/ -7/ -5/ -2/ |
 --7/ -4#/ -6/ 0/ -6/ -4/ | -1/ -5/ 0. -5/ | --7/ -5/ 0/ -5/ 0/ -5/ |
 -1/ -5/ 0/ -5/ 0/ -5/ | --7/ -5/ 0/ -5/ 0/ -5/ | --6/ -3/ 2b/ -3/ 1/ -3/ |
