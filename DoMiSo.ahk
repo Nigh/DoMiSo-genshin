@@ -1,4 +1,4 @@
-﻿
+
 if A_IsCompiled
 debug:=0
 Else
@@ -102,6 +102,26 @@ While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay
 	genshin_play_p += 1
 }
 Return
+
+GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
+	global hEdit1, editer
+	if FileArray.MaxIndex() > 1
+	{
+		MsgBox, 0x41010, ERROR, More than 1 file detected.
+		Return
+	}
+	if CtrlHwnd+0=hEdit1+0
+	{
+		FileGetSize, size, % FileArray[1], K
+		if size >= 64
+		{
+			MsgBox, 0x41010, ERROR, The file is too LARGE.
+			Return
+		}
+		FileRead, content, % FileArray[1]
+		ControlSetText,, % content, ahk_id %hEdit1%
+	}
+}
 
 genshin_play()
 {
