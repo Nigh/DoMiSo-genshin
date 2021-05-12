@@ -1,4 +1,4 @@
-
+﻿
 full_command_line := DllCall("GetCommandLine", "str")
 if not (A_IsAdmin or RegExMatch(full_command_line, " /restart(?!\S)"))
 {
@@ -26,6 +26,16 @@ SendMode event
 #Include data/midi_data.ahk
 #Include lib/Music.ahk
 #Include menu.ahk
+#include Encrypt.ahk
+
+
+; 谱面模式normal or cipher
+sheet_mode:="normal"
+; 谱面内容
+sheet_content:=""
+; 显示内容
+plain_content:=""
+
 
 isBtn1Playing:=0
 isBtn2Playing:=0
@@ -37,9 +47,6 @@ baseOffset := [0,2,4,5,7,9,11]
 
 Notes := new NotePlayer()
 Notes.Instrument(_Instrument)
-;~ Gosub, play
-;~ Notes.Repeat := 1
-;~ MsgBox, % txt
 ; q w e r t y u
 ; a s d f g h j
 ; z x c v b n m
@@ -66,7 +73,7 @@ genshin_note_map := { 48:"z"
 , 83:"u" }
 #Include gui.ahk
 Gui, Submit, NoHide
-txt:=editer
+sheet_content:=editer
 Gosub resolution
 Notes.Start()
 Return
@@ -92,9 +99,7 @@ genshin_array_sort(ByRef array)
 		{
 			array.Push({"delay":note[1], "note":note[2]})
 		}
-		
 	}
-	; MsgBox, % array_string
 }
 
 genshin_main:
@@ -116,8 +121,9 @@ While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay
 }
 Return
 
+; 管理员权限下，无法直接使用拖入文件的功能，改由文件选择器调用此方法
 GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
-	global hEdit1, editer
+	global hEdit1, editer, sheet_mode, plain_content, sheet_content
 	if FileArray.MaxIndex() > 1
 	{
 		MsgBox, 0x41010, ERROR, More than 1 file detected.
@@ -131,8 +137,26 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 			MsgBox, 0x41010, ERROR, The file is too LARGE.
 			Return
 		}
-		FileRead, content, % FileArray[1]
-		ControlSetText,, % content, ahk_id %hEdit1%
+		f:=FileOpen(FileArray[1], "r")
+		if(is_dms_file(f))
+		{
+			sheet_mode:="cipher"
+			GuiControl, +ReadOnly +Disabled, editer
+			f.Seek(0)
+			_temp:=Decrypt_file(f)
+			plain_content:=_temp[1]
+			sheet_content:=_temp[2]
+		}
+		Else
+		{
+			sheet_mode:="normal"
+			GuiControl, -ReadOnly -Disabled, editer
+			f.Seek(0)
+			plain_content:=f.Read()
+			sheet_content:=plain_content
+		}
+		f.Close()
+		ControlSetText,, % plain_content, ahk_id %hEdit1%
 	}
 }
 
@@ -145,7 +169,7 @@ genshin_play()
 	WinWaitActive, ahk_exe YuanShen.exe,, 0
 	if(ErrorLevel==1)
 	{
-		MsgBox, Genshin is not running!!!
+		MsgBox, 0x41010,,Genshin is not running!!!
 		Return
 	}
 	isBtn1Playing:=1
@@ -165,8 +189,13 @@ genshin_stop()
 func_btn_play:
 if(!isBtn1Playing)
 {
-	Gui, Submit, NoHide
-	txt:=editer
+	
+	if(sheet_mode=="normal")
+	{
+		Gui, Submit, NoHide
+		sheet_content:=editer
+	}
+	; TODO
 	Gosub resolution
 	genshin_array_sort(genshin_play_array)
 	Gosub, func_btn_try_stop
@@ -183,8 +212,11 @@ Return
 func_btn_try:
 if(!isBtn2Playing)
 {
-	Gui, Submit, NoHide
-	txt:=editer
+	if(sheet_mode=="normal")
+	{
+		Gui, Submit, NoHide
+		sheet_content:=editer
+	}
 	Gosub resolution
 	; Clipboard:=output
 	Notes.Start()
@@ -195,6 +227,32 @@ Else
 {
 	Gosub, func_btn_try_stop
 }
+Return
+
+func_btn_file:
+Thread, NoTimers
+FileSelectFile, select_file, 1, , Title, DoMiSo Sheet (*.txt; *.dms)
+Thread, NoTimers, false
+if select_file
+{
+	GuiDropFiles(0, [select_file], hEdit1, 0, 0)
+}
+Return
+
+func_btn_publish:
+if(sheet_mode!="normal")
+{
+	Return
+}
+Gui, Submit, NoHide
+pub_txt:=editer
+If Encrypt_dms_valid(pub_txt)!=1
+{
+	MsgBox, 0x41010, Wrong, No Publish Mark detected.
+	Return
+}
+pub_filename:=Encrypt_dms_enc(pub_txt)
+MsgBox, 0x1040, Success, % "Published as 【" pub_filename "】"
 Return
 
 func_btn_exit:
@@ -215,8 +273,7 @@ Notes.Reset()
 Notes.Instrument(_Instrument)
 base:=60
 beatTime:=Round(60000/80)
-
-Loop, Parse, txt, `n,%A_Space%%A_Tab%	;逐行解析
+Loop, Parse, sheet_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 {
 	chord:=0	;重置和弦标记
 	chordTime:=0	;重置和弦长度
@@ -372,5 +429,3 @@ F6::Reload
 #If
 F8::genshin_stop()
 F9::Gosub, func_btn_play
-
-
