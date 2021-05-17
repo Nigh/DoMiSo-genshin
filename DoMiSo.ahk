@@ -264,6 +264,15 @@ PostMessage, 0xA1, 2
 Return
 
 resolution:
+parse_content:=sheet_content
+if(sheet_mode="normal")
+{
+	If Encrypt_dms_valid(sheet_content)=1
+	{
+		parse_content:=dms_parser(sheet_content)[2]
+	}
+}
+
 genshin_play_array:={}
 genshin_output:=""
 genshin_delay:=0
@@ -273,7 +282,7 @@ Notes.Reset()
 Notes.Instrument(_Instrument)
 base:=60
 beatTime:=Round(60000/80)
-Loop, Parse, sheet_content, `n,`r%A_Space%%A_Tab%	;逐行解析
+Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 {
 	chord:=0	;重置和弦标记
 	chordTime:=0	;重置和弦长度

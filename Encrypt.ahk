@@ -69,6 +69,34 @@ Decrypt_file(f)
 	Return [plaintext, ciphertext]
 }
 
+dms_parser(v)
+{
+	comment:=""
+	sheet:=""
+	isSheet:=0
+	Loop, Parse, v, `n, `r
+	{
+		IfInString, A_LoopField, ======
+		{
+			isSheet:=1
+			Continue
+		}
+		if isSheet=0
+		{
+			comment.=A_LoopField "`r`n"
+		}
+		Else
+		{
+			sheet.=A_LoopField "`r`n"
+		}
+	}
+	if isSheet=0
+	{
+		Return ["", comment]
+	}
+	Return [comment, sheet]
+}
+
 ; 加密
 Encrypt_dms_enc(v)
 {
