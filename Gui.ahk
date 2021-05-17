@@ -3,13 +3,19 @@ pToken := Gdip_Startup()
 sample_sheet =
 (
 
-软件使用教程：https://www.bilibili.com/video/BV1564y1Q7Uq/
+v0.4版本更新:
+    - 添加了加密谱面发布功能
+
+软件使用基础教程：https://www.bilibili.com/video/BV1564y1Q7Uq/
+更多教程请查看后续发布的视频
+===============
 
 1=C
 bpm=150
-1 3 5 ( 1- 3- 5- )
++3/// +5/// +7// ++1/ ++3/ ++5/ +++1
 rollback=9999
-+3 +5 +1 
+-1/ -3 -5/ 1/
+
 )
 ui:={}
 ui_gap:=23
