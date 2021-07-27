@@ -17,6 +17,9 @@ debug:=0
 Else
 debug:=1
 
+; debugHotkey:=debug
+debugHotkey:=0
+
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
@@ -71,6 +74,10 @@ genshin_note_map := { 48:"z"
 , 79:"t"
 , 81:"y"
 , 83:"u" }
+if debug
+{
+	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
+}
 #Include gui.ahk
 Gui, Submit, NoHide
 sheet_content:=editer
@@ -103,7 +110,8 @@ genshin_array_sort(ByRef array)
 }
 
 genshin_main:
-if(genshin_play_p > genshin_play_array.Length())
+genshin_win_hwnd:=genshin_window_exist()
+if((genshin_play_p > genshin_play_array.Length()) or (!genshin_win_hwnd))
 {
 	isBtn1Playing:=0
 	btn1update()
@@ -111,12 +119,18 @@ if(genshin_play_p > genshin_play_array.Length())
 	Return
 }
 DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
-IfWinNotActive, ahk_exe YuanShen.exe
-WinActivate, ahk_exe YuanShen.exe
+; genshin_window_active(genshin_window_exist())
 While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay)
 {
-	Send, % genshin_play_array[genshin_play_p].note
-	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe YuanShen.exe
+	if not genshin_play_array[genshin_play_p].note
+	{
+		Return
+	}
+	if WinActive("ahk_id " genshin_win_hwnd)
+	{
+		Send, % genshin_play_array[genshin_play_p].note
+	}
+	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe GenshinImpact.exe
 	genshin_play_p += 1
 }
 Return
@@ -165,8 +179,8 @@ genshin_play()
 	global startTime, freq, genshin_play_p, isBtn1Playing
 	genshin_play_p := 1
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
-	WinActivate, ahk_exe YuanShen.exe
-	WinWaitActive, ahk_exe YuanShen.exe,, 0
+	genshin_hwnd := genshin_window_active(genshin_window_exist())
+	WinWaitActive, ahk_id %genshin_hwnd%,, 0
 	if(ErrorLevel==1)
 	{
 		MsgBox, 0x41010,,Genshin is not running!!!
@@ -185,6 +199,23 @@ genshin_stop()
 	btn1update()
 	SetTimer, genshin_main, Off
 }
+
+genshin_window_exist()
+{
+	genshinHwnd := WinExist("ahk_exe GenshinImpact.exe")
+	if not genshinHwnd
+	{
+		genshinHwnd := WinExist("ahk_exe YuanShen.exe")
+	}
+	return genshinHwnd
+}
+
+genshin_window_active(hwnd)
+{
+	WinActivate, ahk_id %hwnd%
+	Return hwnd
+}
+
 
 func_btn_play:
 if(!isBtn1Playing)
@@ -432,7 +463,7 @@ Return
 GuiClose:
 ExitApp
 
-#If debug
+#If debugHotkey
 F5::ExitApp
 F6::Reload
 #If

@@ -3,6 +3,13 @@ pToken := Gdip_Startup()
 sample_sheet =
 (
 
+当前为Genshin国际服适配测试二进制
+
+v0.5计划:
+	- 国际服适配测试
+	- 英文翻译增加
+	- youtube视频追加
+
 v0.4版本更新:
     - 添加了加密谱面发布功能
 
