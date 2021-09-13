@@ -176,4 +176,5 @@ Rollback command animation demonstration：
 
 Donate
 ------------------
-Ko-fi: https://ko-fi.com/xianii
+- Ko-fi: https://ko-fi.com/xianii
+- Paypal: https://paypal.me/xianii

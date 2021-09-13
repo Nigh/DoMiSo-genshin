@@ -181,4 +181,4 @@ rollback命令动画演示：
 
 捐助
 ------------------
-![](assets/afdian.webp)
+![](assets/alipay.jpg)
