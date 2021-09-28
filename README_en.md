@@ -1,8 +1,8 @@
-DoMiSo Documentation
-==================
+![](logo.png)
 
-### [English](README_en.md)
-### [简体中文](README.md)
+### [English Document](README_en.md)
+
+### [中文文档](README.md)
 
 - github：https://github.com/Nigh/DoMiSo
 - gitee：https://gitee.com/xianii/domiso

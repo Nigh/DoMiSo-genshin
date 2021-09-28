@@ -1,8 +1,8 @@
-DoMiSo 简谱解释器 说明文档
-==================
+![](logo.png)
 
-## [English](README_en.md)
-## [简体中文](README.md)
+### [English Document](README_en.md)
+
+### [中文文档](README.md)
 
 - github托管：https://github.com/Nigh/DoMiSo
 - gitee托管：https://gitee.com/xianii/domiso
