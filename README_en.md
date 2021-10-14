@@ -16,6 +16,9 @@ The source of the software should be properly acknowledged in the text descripti
 
 Any infringement of third parties caused by the use of this software is the sole responsibility of the user.
 
+## Communities
+- Discord: https://discord.gg/5PCebykNaC
+
 ## Screenshot
 
 ![](assets/screenshot.png)

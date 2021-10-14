@@ -14,6 +14,9 @@
 
 任何由于使用本软件对第三方所造成的侵害均由使用者本人负责。
 
+## 社群
+- 开黑啦: https://kaihei.co/IWXRLp
+
 ## 界面
 
 ![](assets/screenshot.png)
