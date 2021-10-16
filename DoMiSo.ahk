@@ -1,4 +1,4 @@
-
+﻿
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
@@ -14,7 +14,12 @@ debug:=0
 Else
 debug:=1
 
+debugHotkey:=debug
+; debugHotkey:=0
+IniRead, nonAdmin, setting.ini, update, nonAdminMode, 0
+if(!nonAdmin){
 	UAC()
+}
 if debug
 {
 	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
@@ -48,6 +53,8 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
 baseOffset := [0,2,4,5,7,9,11]
 
+; TODO: add no midi mode
+
 Notes := new NotePlayer()
 Notes.Instrument(_Instrument)
 ; q w e r t y u
@@ -74,22 +81,22 @@ genshin_note_map := { 48:"z"
 , 79:"t"
 , 81:"y"
 , 83:"u" }
-if debug
-{
-	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
-}
+
+IniRead, startup_music, setting.ini, update, startupMusic, 1
+IniRead, clean_start, setting.ini, update, startupEditorClean, 0
+
 #Include gui.ahk
 Gui, Submit, NoHide
 sheet_content:=editer
-Gosub resolution
-Notes.Start()
+Gosub resolve
+if(startup_music){
+	Notes.Start()
+}
 Return
 
 titleMove:
 PostMessage 0xA1, 2
 Return
-
-#Include menu_label.ahk
 
 genshin_array_sort(ByRef array)
 {
@@ -107,6 +114,26 @@ genshin_array_sort(ByRef array)
 			array.Push({"delay":note[1], "note":note[2]})
 		}
 	}
+}
+
+analyseNotes(Notes)
+{
+	global genshin_note_map
+	notesCount:=0
+	genshinNotesCount:=0
+	For Key, Array in Notes.Timeline
+	{
+		For k, v in Array
+		{
+			if(v.Type=="NoteOn") {
+				notesCount+=1
+				if(genshin_note_map.HasKey(v.Index)){
+					genshinNotesCount+=1
+				}
+			}
+		}
+	}
+	statubar_txt(genshinNotesCount "/" notesCount " Notes | " Round(100*genshinNotesCount/notesCount, 2) "% playable in game")
 }
 
 genshin_main:
@@ -218,29 +245,32 @@ genshin_window_active(hwnd)
 
 
 func_btn_play:
+if(nonAdmin)
+{
+	MsgBox, 0x41010, ERROR, Can not play in nonAdminMode
+	Return
+}
 if(!isBtn1Playing)
 {
-	
 	if(sheet_mode=="normal")
 	{
 		Gui, Submit, NoHide
 		sheet_content:=editer
 	}
-	; TODO
-	Gosub resolution
+	Gosub resolve
 	genshin_array_sort(genshin_play_array)
-	Gosub, func_btn_try_stop
+	Gosub, func_btn_listen_stop
 	genshin_play()
 }
 Return
 
-func_btn_try_stop:
+func_btn_listen_stop:
 	Notes.Reset()
 	isBtn2Playing:=0
 	btn2update()
 Return
 
-func_btn_try:
+func_btn_listen:
 if(!isBtn2Playing)
 {
 	if(sheet_mode=="normal")
@@ -248,15 +278,28 @@ if(!isBtn2Playing)
 		Gui, Submit, NoHide
 		sheet_content:=editer
 	}
-	Gosub resolution
+	Gosub resolve
 	; Clipboard:=output
 	Notes.Start()
+	SetTimer, midi_playing_check, 1000
 	isBtn2Playing:=1
 	btn2update()
 }
 Else
 {
-	Gosub, func_btn_try_stop
+	Gosub, func_btn_listen_stop
+}
+Return
+
+midi_playing_check:
+if(isBtn2Playing){
+	if(!Notes.Playing){
+		isBtn2Playing:=0
+		btn2update()
+		SetTimer, midi_playing_check, Off
+	}
+} else {
+	SetTimer, midi_playing_check, Off
 }
 Return
 
@@ -294,7 +337,7 @@ winMove:
 PostMessage, 0xA1, 2
 Return
 
-resolution:
+resolve:
 parse_content:=sheet_content
 if(sheet_mode="normal")
 {
@@ -458,6 +501,8 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 		}
 	}
 }
+; 统计音符并显示到状态栏
+analyseNotes(Notes)
 Return
 
 UAC()
@@ -479,9 +524,15 @@ UAC()
 GuiClose:
 ExitApp
 
+TrueExit:
+log_flush()
+ExitApp
+
 #If debugHotkey
 F5::ExitApp
 F6::Reload
 #If
 F8::genshin_stop()
 F9::Gosub, func_btn_play
+
+#include menu.ahk
