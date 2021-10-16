@@ -1,4 +1,4 @@
-﻿
+
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ; #Warn  ; Enable warnings to assist with detecting common errors.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
@@ -7,6 +7,7 @@ SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
 SetKeyDelay, 1, 1 
 SendMode event 
+FileEncoding, UTF-8
 
 outputVersion()
 if A_IsCompiled
