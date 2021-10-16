@@ -1,4 +1,4 @@
-;~ guiDebug:=1
+﻿;~ guiDebug:=1
 #Include lib/Gdip.ahk
 pToken := Gdip_Startup()
 if(clean_start && version_str==version){
