@@ -31,12 +31,16 @@ _temp_txt=
 (
 
 Videos::
-
+Coming soon...
 
 相关视频::
 首发视频: https://www.bilibili.com/video/BV1564y1Q7Uq/
 0.4版本更新视频: https://www.bilibili.com/video/BV1tA411g7XM/
 编谱教程01: https://www.bilibili.com/video/BV1pX4y1G76r/
+
+
+Discord: https://discord.gg/5PCebykNaC
+官方社群: https://kaihei.co/IWXRLp
 
 ===============
 
