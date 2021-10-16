@@ -1,4 +1,0 @@
-
-Show:
-Gui, Show
-Return

@@ -1,36 +1,33 @@
-﻿
-full_command_line := DllCall("GetCommandLine", "str")
-if not (A_IsAdmin or RegExMatch(full_command_line, " /restart(?!\S)"))
-{
-	try
-	{
-		if A_IsCompiled
-			Run *RunAs "%A_ScriptFullPath%" /restart
-		else
-			Run *RunAs "%A_AhkPath%" /restart "%A_ScriptFullPath%"
-	}
-	ExitApp
-}
 
-if A_IsCompiled
-debug:=0
-Else
-debug:=1
-
-; debugHotkey:=debug
-debugHotkey:=0
-
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
 SetKeyDelay, 1, 1 
 SendMode event 
 
+outputVersion()
+if A_IsCompiled
+debug:=0
+Else
+debug:=1
+
+	UAC()
+if debug
+{
+	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
+}
+
+
+#include update.ahk
+
 #Include data/midi_data.ahk
 #Include lib/Music.ahk
-#Include menu.ahk
 #include Encrypt.ahk
 
+menu()
 
 ; 谱面模式normal or cipher
 sheet_mode:="normal"
@@ -459,6 +456,22 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 	}
 }
 Return
+
+UAC()
+{
+	full_command_line := DllCall("GetCommandLine", "str")
+	if not (A_IsAdmin or RegExMatch(full_command_line, " /restart(?!\S)"))
+	{
+		try
+		{
+			if A_IsCompiled
+				Run *RunAs "%A_ScriptFullPath%" /restart
+			else
+				Run *RunAs "%A_AhkPath%" /restart "%A_ScriptFullPath%"
+		}
+		ExitApp
+	}
+}
 
 GuiClose:
 ExitApp
