@@ -34,44 +34,12 @@ Instructions for use
 
 As the `Genshin Impact` game is launched with administrator privileges, this software requires administrator privileges to interact with the game proper.
 
+## AHK version
 
-Current Version
+`1.1.33.7 Unicode 32bit`
+
+[Update Log](changes.md)
 ------------------
-v0.32A Genshin - (Genshin Impact Special Edition)
-
-ahk version-`1.1.30.03`
-
-Update Log
-------------------
-
-- 2021.4.6 v0.32A Genshin
-
-  Fixes an issue where the time value of a bracketed chord was incorrectly affected by the time value of the previous bracketed chord
-
-- 2021.4.1 v0.31A Genshin
-
-  Fixing an abnormal shortcut key function
-
-- 2021.3.29 v0.3A Genshin
-
-  Add F9 as a start shortcut  
-  Change the colour of the title to distinguish it from the manual version
-
-- 2021.3.29 v0.2a Genshin
-
-  Rewrote the UI and changed the GDIP implementation  
-  Genshin Impact Special Edition with Auto-Play function
-
-- 2013.7.6 v0.1a Alpha 
-
-  Add a stop button  
-  Add the ability to click on the tray icon to activate the main form  
-  Added a window top button  
-  Slightly changed the interaction of the title bar
-
-- 2013.6.29 v0.1 Alpha
-
-  First demo publish
 
 Introduction
 ------------------
