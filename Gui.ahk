@@ -1,4 +1,4 @@
-﻿;~ guiDebug:=1
+;~ guiDebug:=1
 #Include lib/Gdip.ahk
 pToken := Gdip_Startup()
 if(clean_start){
@@ -94,7 +94,6 @@ Gui, Add, pic, % "x" ui.buttonPub.pos.x " y" ui.buttonPub.pos.y " w" ui.buttonPu
 
 Gui, Add, pic, % "x" ui.statuBar.pos.x " y" ui.statuBar.pos.y " w" ui.statuBar.size.w " h" ui.statuBar.size.h " 0xE hwndhStatuBar", 
 
-Gui, Show, % "w" ui.size.w " h" ui.size.h
 
 hBitmap:={}
 if debug
@@ -141,6 +140,7 @@ SetImage(hBtn3,hBitmap.button3)
 SetImage(hBtnFile,hBitmap.buttonFile)
 SetImage(hBtnPub,hBitmap.buttonPub)
 statubar_txt("v" version)
+Gui, Show, % "w" ui.size.w " h" ui.size.h
 
 OnMessage(0x200, "MouseMove")
 OnMessage(0x201, "MouseDown")
