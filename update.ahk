@@ -23,36 +23,30 @@ downloadUrlBase:="https://download.fastgit.org/Nigh/DoMiSo-genshin/releases/late
 versionFilename:="version.txt"
 binaryFilename:="DomisoGenshin.zip"
 
-update_log:="
-(
-null
-)"
-
 IniRead, logLevel, setting.ini, update, log, 0
 IniRead, lastUpdate, setting.ini, update, last, 0
 IniRead, autoUpdate, setting.ini, update, autoupdate, 1
 IniRead, debugmode, setting.ini, update, debug, 0
+IniRead, version_str, setting.ini, update, ver, "0"
 log_write("Start at " A_YYYY "-" A_MM "-" A_DD, 0)
 today:=A_MM . A_DD
 if(autoUpdate) {
 	if(lastUpdate!=today) {
 		log_write("Getting Update",0)
 		MsgBox,,Update,Getting Update`n获取最新版本,2
-		update()
+		get_latest_version()
 	} else {
-		IniRead, version_str, setting.ini, update, ver, "0"
-		if(version_str!=version) {
-			IniWrite, % version, setting.ini, update, ver
-			MsgBox, % version "`nUpdate log`n更新日志`n`n" update_log
-		}
 		ttm("Domiso automata Start`nv" version "`n原神弹琴人偶启动")
 	}
 } else {
 	log_write("Update Skiped",0)
-	MsgBox,,Update,Update Skiped`n跳过升级`n`nCurrent version`n当前版本`nv%version%,2
+	if(lastUpdate!=today) {
+		MsgBox,,Update,Update Skiped`n跳过升级`n`nCurrent version`n当前版本`nv%version%,2
+		IniWrite, % A_MM A_DD, setting.ini, update, last
+	}
 }
 
-update(){
+get_latest_version(){
 	global
 	req := ComObjCreate("MSXML2.ServerXMLHTTP")
 	; https://download.fastgit.org/Nigh/Genshin-fishing/releases/latest/download/version.txt

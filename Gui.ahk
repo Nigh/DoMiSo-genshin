@@ -1,30 +1,42 @@
 ;~ guiDebug:=1
 #Include lib/Gdip.ahk
 pToken := Gdip_Startup()
-if(clean_start){
+if(clean_start && version_str==version){
 	sample_sheet := ""
 } else {
-	sample_sheet =
+	FileCreateDir, % A_Temp "\domiso"
+	FileInstall, .\changes.md, % A_Temp "\domiso\changes.md", 1
+	changes_file := FileOpen(A_Temp "\domiso\changes.md", "r")
+	changes_txt:=""
+
+	sample_sheet := "`nv" version " update log:`n"
+	
+	_temp_txt:=""
+	_flag := 0
+	while(!changes_file.AtEOF) {
+		_lines:=changes_file.ReadLine()
+		if(RegExMatch(_lines, "^##\s")) {
+			_flag += 1
+		} else if(_flag == 1) {
+			_temp_txt .= _lines
+		}
+		if(_flag>1) {
+			Break
+		}
+	}
+	changes_file.Close()
+
+	sample_sheet .= _temp_txt
+_temp_txt=
 (
-v0.99.0 Update log:
 
-- 添加了日志系统
-- 添加了自动更新功能
-- 更改了按键名称
-- 添加了音符统计，显示在状态栏
-- 添加了开场音乐开关，可以关闭开场播放的音乐
-- 添加了清净开场开关，打开软件可以自动清空编辑栏
-- 添加了非管理员模式，方便编辑和试听
-- 修复了试听按键的状态在播放完成后不会自动恢复的问题
-- 
-
-Video: 
+Videos::
 
 
-相关视频
-首发视频：https://www.bilibili.com/video/BV1564y1Q7Uq/
-0.4版本更新视频：https://www.bilibili.com/video/BV1tA411g7XM/
-编谱教程01：https://www.bilibili.com/video/BV1pX4y1G76r/
+相关视频::
+首发视频: https://www.bilibili.com/video/BV1564y1Q7Uq/
+0.4版本更新视频: https://www.bilibili.com/video/BV1tA411g7XM/
+编谱教程01: https://www.bilibili.com/video/BV1pX4y1G76r/
 
 ===============
 
@@ -35,6 +47,8 @@ rollback=9999
 -1/ -3 -5/ 1/
 
 )
+	sample_sheet .= _temp_txt
+	free(_temp_txt)
 }
 
 ui:={}
