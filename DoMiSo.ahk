@@ -20,6 +20,9 @@ if debug
 	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
 }
 
+OnExit, TrueExit
+#Include log.ahk
+log_init()
 
 #include update.ahk
 
