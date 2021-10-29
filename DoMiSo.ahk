@@ -54,6 +54,7 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
 baseOffset := [0,2,4,5,7,9,11]
 
+; TODO: 添加midi音色选择
 ; TODO: add no midi mode
 
 Notes := new NotePlayer()
