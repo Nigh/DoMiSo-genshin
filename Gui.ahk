@@ -45,10 +45,8 @@ Discord: https://discord.gg/5PCebykNaC
 ===============
 
 1=C
-bpm=150
-+3/// +5/// +7// ++1/ ++3/ ++5/ +++1
-rollback=9999
--1/ -3 -5/ 1/
+bpm=180
+1/ 3/ 5/ +1/// +5/// ++1/
 
 )
 	sample_sheet .= _temp_txt

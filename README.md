@@ -29,16 +29,6 @@ Any infringement of third parties caused by the use of this software is the sole
 
 Instructions(使用说明)
 ------------------
-- 在输入框中粘贴有效的简谱或使用`File`按钮选择`txt`或`dms`谱
-- 点击`listen`可以使用midi试听谱面
-- 在`原神`游戏已经启动，并且在演奏界面时，点击`Play`可以自动在游戏中演奏谱面
-- 按下`F8`快捷键可以停止游戏中的自动演奏
-- 按下`F9`快捷键可以开始游戏中的自动演奏
-- 当谱面中存在由一排等于号`=`如`========`构成的分割线时，分割线以上部分视为注释部分，不会演奏
-- 当谱面中存在注释部分时，使用`Encrypt`按钮可以发布加密谱。加密谱面只会显示注释部分，不会显示演奏谱面
-
-
-
 
 - Paste a valid sheet into the input box or use the `File` button to select a `txt` or `dms` sheet
 - Click on `listen` to listen to the sheet in midi
@@ -47,6 +37,16 @@ Instructions(使用说明)
 - Press the `F9` shortcut to start playing automatically in the game
 - When there is a dividing line consisting of a row of equal signs `=` such as `========`, the part above the dividing line is considered a commentary and will not be played
 - When there is a comment section in the sheet, use the `Encrypt` button to publish an encrypted sheet. The encrypted sheet will only show the comment section.
+
+
+
+- 在输入框中粘贴有效的简谱或使用`File`按钮选择`txt`或`dms`谱
+- 点击`listen`可以使用midi试听谱面
+- 在`原神`游戏已经启动，并且在演奏界面时，点击`Play`可以自动在游戏中演奏谱面
+- 按下`F8`快捷键可以停止游戏中的自动演奏
+- 按下`F9`快捷键可以开始游戏中的自动演奏
+- 当谱面中存在由一排等于号`=`如`========`构成的分割线时，分割线以上部分视为注释部分，不会演奏
+- 当谱面中存在注释部分时，使用`Encrypt`按钮可以发布加密谱。加密谱面只会显示注释部分，不会显示演奏谱面
 
 > As the `Genshin Impact` game is launched with administrator privileges, this software requires administrator privileges to interact with the game proper  
 > 由于`原神`游戏以管理员权限启动，所以本软件需要管理员权限才能与游戏本体交互。

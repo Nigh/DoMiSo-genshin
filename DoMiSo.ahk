@@ -9,6 +9,8 @@ SetKeyDelay, 1, 1
 SendMode event 
 FileEncoding, UTF-8
 
+#include meta.ahk
+
 outputVersion()
 if A_IsCompiled
 debug:=0
