@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 FileEncoding, UTF-8
 name_en:="Domiso Automata"
 name_zh:="原神自动弹琴人偶"
