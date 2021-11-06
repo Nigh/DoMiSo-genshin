@@ -38,7 +38,7 @@ Decrypt_file(f)
 	ciphertext:=""
 	plaintext_len:=0
 	ciphertext_len:=0
-	f.Seek(8)
+	f.Seek(8, 1)
 	Loop, 4
 	{
 		cipher_key[A_Index]:=f.ReadUChar()
@@ -179,7 +179,7 @@ Encrypt_dms_enc(v)
 		NumPut(NumGet(ciphertext, A_Index-1, "UChar"), output, head_len+plain_len+A_Index-1, "UChar")
 	}
 	filename:="DoMiSoCipher_" A_Now ".dms"
-	File := FileOpen(filename, "w")
+	File := FileOpen(filename, "w", "UTF-8-RAW")
 	File.RawWrite(output, output_len)
 	File.Close()
 	Return filename

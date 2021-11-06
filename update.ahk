@@ -14,7 +14,7 @@ outputVersion(){
 		{
 			RegExMatch(param, "--out=(\w+)", outName)
 			if(outName1=="version") {
-				f := FileOpen("version.txt","w")
+				f := FileOpen("version.txt","w","UTF-8-RAW")
 				f.Write(version)
 				f.Close()
 				ExitApp
@@ -46,8 +46,6 @@ if(autoUpdate) {
 		IniWrite, % A_MM A_DD, setting.ini, update, last
 	}
 }
-
-updateSite:=""
 
 get_latest_version(){
 	global
