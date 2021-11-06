@@ -1,6 +1,6 @@
 ![](logo.png)
 
-- github：https://github.com/Nigh/DoMiSo
+- github：https://github.com/Nigh/DoMiSo-genshin
 
 > This document has been mostly translated by `deepl.com`
 

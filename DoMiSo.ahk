@@ -27,6 +27,8 @@ if debug
 {
 	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
 }
+; Is it limited to in genshin use
+genshinLimit := 1
 
 OnExit, TrueExit
 #Include log.ahk
@@ -141,7 +143,11 @@ analyseNotes(Notes)
 }
 
 genshin_main:
-genshin_win_hwnd:=genshin_window_exist()
+if(genshinLimit) {
+	genshin_win_hwnd:=genshin_window_exist()
+} else {
+	genshin_win_hwnd:=1
+}
 if((genshin_play_p > genshin_play_array.Length()) or (!genshin_win_hwnd))
 {
 	isBtn1Playing:=0
@@ -157,8 +163,12 @@ While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay
 	{
 		Return
 	}
-	if WinActive("ahk_id " genshin_win_hwnd)
-	{
+	if(genshinLimit) {
+		if WinActive("ahk_id " genshin_win_hwnd)
+		{
+			Send, % genshin_play_array[genshin_play_p].note
+		}
+	} else {
 		Send, % genshin_play_array[genshin_play_p].note
 	}
 	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe GenshinImpact.exe
@@ -207,15 +217,17 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 
 genshin_play()
 {
-	global startTime, freq, genshin_play_p, isBtn1Playing
+	global startTime, freq, genshin_play_p, isBtn1Playing, genshinLimit
 	genshin_play_p := 1
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
-	genshin_hwnd := genshin_window_active(genshin_window_exist())
-	WinWaitActive, ahk_id %genshin_hwnd%,, 0
-	if(ErrorLevel==1)
-	{
-		MsgBox, 0x41010,,Genshin is not running!!!
-		Return
+	if(genshinLimit) {
+		genshin_hwnd := genshin_window_active(genshin_window_exist())
+		WinWaitActive, ahk_id %genshin_hwnd%,, 0
+		if(ErrorLevel==1)
+		{
+			MsgBox, 0x41010,,Genshin is not running!!!
+			Return
+		}
 	}
 	isBtn1Playing:=1
 	btn1update()
