@@ -4,6 +4,16 @@
 
 > This document has been mostly translated by `deepl.com`
 
+## Download(下载)
+
+- [Download Link-下载链接-1](https://download.fastgit.org/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
+- [Download Link-下载链接-2](https://github.com/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
+- [Download Link-下载链接-3](https://github.com.cnpmjs.org/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
+
+## Related Software(相关软件)
+- [LyreMaster-Genshin(手搓弹琴大师-原神)](https://github.com/Nigh/LyreMaster-Genshin)
+
+
 ## Glossary of Terms(名词对照)
 `numbered musical notation`:`简谱`
 
