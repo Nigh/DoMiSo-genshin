@@ -14,7 +14,7 @@ outputVersion(){
 		{
 			RegExMatch(param, "--out=(\w+)", outName)
 			if(outName1=="version") {
-				f := FileOpen("version.txt","w","UTF-8-RAW")
+				f := FileOpen(versionFilename,"w","UTF-8-RAW")
 				f.Write(version)
 				f.Close()
 				ExitApp
