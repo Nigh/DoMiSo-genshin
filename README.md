@@ -1,4 +1,4 @@
-![](logo.png)![genshin](assets\genshin.png)
+![](logo.png)![genshin](assets/genshin.png)
 
 - github：https://github.com/Nigh/DoMiSo-genshin
 
