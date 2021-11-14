@@ -1,8 +1,14 @@
-![](logo.png)
+![](logo.png)![genshin](assets\genshin.png)
 
 - github：https://github.com/Nigh/DoMiSo-genshin
 
 > This document has been mostly translated by `deepl.com`
+
+## Introduction(简介)
+
+`DoMiSo` is a software that helps you play musical instruments fully automatically in the game 「Genshin Impact」.
+
+`自动弹琴人偶` 是一个帮助你在游戏《原神》中全自动演奏乐器的软件。
 
 ## Download(下载)
 
@@ -11,7 +17,11 @@
 - [Download Link-下载链接-3](https://github.com.cnpmjs.org/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
 
 ## Related Software(相关软件)
-- [LyreMaster-Genshin(手搓弹琴大师-原神)](https://github.com/Nigh/LyreMaster-Genshin)
+#### [LyreMaster-Genshin(手搓弹琴大师-原神)](https://github.com/Nigh/LyreMaster-Genshin)
+
+`LyreMaster` is a software that helps you to play musical instruments easily in the game 「Genshin Impact」.
+
+`手搓弹琴大师` 是一个帮助你在游戏《原神》中轻松演奏乐器的软件。
 
 
 ## Glossary of Terms(名词对照)
