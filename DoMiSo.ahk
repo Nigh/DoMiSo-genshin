@@ -53,16 +53,15 @@ plain_content:=""
 isBtn1Playing:=0
 isBtn2Playing:=0
 
-_Instrument:=10
+_Instrument:=inst-1
+
 DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
 baseOffset := [0,2,4,5,7,9,11]
 
-; TODO: 添加midi音色选择
 ; TODO: add no midi mode
 
 Notes := new NotePlayer()
-Notes.Instrument(_Instrument)
 ; q w e r t y u
 ; a s d f g h j
 ; z x c v b n m
@@ -92,8 +91,6 @@ IniRead, startup_music, setting.ini, update, startupMusic, 1
 IniRead, clean_start, setting.ini, update, startupEditorClean, 0
 
 #Include gui.ahk
-Gui, Submit, NoHide
-sheet_content:=editer
 Gosub resolve
 if(startup_music){
 	Notes.Start()
@@ -268,11 +265,6 @@ if(nonAdmin)
 }
 if(!isBtn1Playing)
 {
-	if(sheet_mode=="normal")
-	{
-		Gui, Submit, NoHide
-		sheet_content:=editer
-	}
 	Gosub resolve
 	genshin_array_sort(genshin_play_array)
 	Gosub, func_btn_listen_stop
@@ -289,11 +281,6 @@ Return
 func_btn_listen:
 if(!isBtn2Playing)
 {
-	if(sheet_mode=="normal")
-	{
-		Gui, Submit, NoHide
-		sheet_content:=editer
-	}
 	Gosub resolve
 	; Clipboard:=output
 	Notes.Start()
@@ -354,6 +341,13 @@ PostMessage, 0xA1, 2
 Return
 
 resolve:
+Gui, Submit, NoHide
+_Instrument:=instrument_select-1
+if(sheet_mode=="normal")
+{
+	sheet_content:=editer
+
+}
 parse_content:=sheet_content
 if(sheet_mode="normal")
 {
@@ -546,6 +540,7 @@ GuiClose:
 ExitApp
 
 TrueExit:
+IniWrite, % _Instrument, setting.ini, update, inst
 IniWrite, % version, setting.ini, update, ver
 log_flush()
 ExitApp
