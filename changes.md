@@ -4,6 +4,11 @@ Domiso原神特别版
 
 Domiso Genshin ver
 
+## v0.99.2
+
+- 添加了选择试听音色的功能
+- Now you can choose the instrument for listening
+
 ## v0.99.0
 
 - 添加了原神国际版支持

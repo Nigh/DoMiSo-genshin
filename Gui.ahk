@@ -100,6 +100,8 @@ edit_height:=ui.size.h-edit_y-2*ui.button1.size.h-3*ui_gap-ui.statuBar.size.h
 Gui, Add, Edit, x30 y%edit_y% w440 h%edit_height% vediter hwndhEdit1, % sample_sheet
 
 Gui, Add, pic, % "x" ui.button1.pos.x " y" ui.button1.pos.y-20 " w" ui.button1.size.w " h20 0xE hwndhHotkey", 
+Gui, +Delimiter`n
+Gui, Add, DDL, % "x" ui.button2.pos.x " y" ui.button2.pos.y-22 " AltSubmit r13 vinstrument_select w" ui.button2.size.w " Choose" _Instrument+1, %Instruments%
 
 Gui, Add, pic, % "x" ui.button1.pos.x " y" ui.button1.pos.y " w" ui.button1.size.w " h" ui.button1.size.h " 0xE hwndhBtn1 gfunc_btn_play", 
 Gui, Add, pic, % "x" ui.button2.pos.x " y" ui.button2.pos.y " w" ui.button2.size.w " h" ui.button2.size.h " 0xE hwndhBtn2 gfunc_btn_listen", 
@@ -194,6 +196,12 @@ btn2update()
 {
 	global
 	btn_release(hBtn2)
+	if(isBtn2Playing)
+	{
+		GuiControl, disable, instrument_select
+	} else {
+		GuiControl, enable, instrument_select
+	}
 }
 
 btn_release(hwnd)

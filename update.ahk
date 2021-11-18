@@ -28,7 +28,8 @@ IniRead, lastUpdate, setting.ini, update, last, 0
 IniRead, autoUpdate, setting.ini, update, autoupdate, 1
 IniRead, updateMirror, setting.ini, update, mirror, fastgit
 IniWrite, % updateMirror, setting.ini, update, mirror
-IniRead, version_str, setting.ini, update, ver, "0"
+IniRead, version_str, setting.ini, update, ver, 0
+IniRead, inst, setting.ini, update, inst, 11
 log_write("Start at " A_YYYY "-" A_MM "-" A_DD, 0)
 today:=A_MM . A_DD
 if(autoUpdate) {
