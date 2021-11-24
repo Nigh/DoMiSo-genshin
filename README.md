@@ -246,7 +246,7 @@ Donate(捐助)
 
 - Ko-fi: https://ko-fi.com/xianii
 - Paypal: https://paypal.me/xianii
-
+- Wechat: ![](assets/wechat.jpg)
 - Alipay: ![](assets/alipay.jpg)
 
 ## Advanced Function(进阶功能)
