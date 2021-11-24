@@ -53,7 +53,7 @@ plain_content:=""
 isBtn1Playing:=0
 isBtn2Playing:=0
 
-_Instrument:=inst-1
+_Instrument:=inst
 
 DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
@@ -363,6 +363,9 @@ genshin_delay:=0
 
 output:=""
 Notes.Reset()
+if(_Instrument<0 or _Instrument>127){
+	_Instrument:=0
+}
 Notes.Instrument(_Instrument)
 base:=60
 beatTime:=Round(60000/80)
