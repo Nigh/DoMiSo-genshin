@@ -86,7 +86,7 @@ There are several example sheets in the same directory as this document. You can
 DoMiSo 是一个轻量级的简谱解释器，它能够将格式化的简谱转换成midi音乐并播放出来。  
 在本说明文档的同目录下将会有几个示例简谱。用户可以将它们拷贝到DoMiSo中播放出来。
 
-Grammar(语法)
+Syntax(语法)
 ------------------
 DoMiSo's numbered musical notation format includes `control commands` and `note markers`.  
 The control commands include `key control`, `tempo control` and `rollback control`.

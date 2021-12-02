@@ -60,6 +60,7 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 baseOffset := [0,2,4,5,7,9,11]
 
 ; TODO: add no midi mode
+; TODO: global mode
 
 Notes := new NotePlayer()
 ; q w e r t y u
@@ -184,7 +185,7 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 	if CtrlHwnd+0=hEdit1+0
 	{
 		FileGetSize, size, % FileArray[1], K
-		if size >= 64
+		if size >= 256
 		{
 			MsgBox, 0x41010, ERROR, The file is too LARGE.
 			Return
@@ -209,6 +210,7 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 		}
 		f.Close()
 		ControlSetText,, % plain_content, ahk_id %hEdit1%
+		Gosub, resolve
 	}
 }
 

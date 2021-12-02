@@ -4,6 +4,15 @@ Domiso原神特别版
 
 Domiso Genshin ver
 
+## v0.99.3
+
+- 修复了试听音色保存的问题，之前在音色为第一种时退出会发生问题
+- Fixed the problem of saving instruments settings, which previously occurred when the instruments was the first one to exit
+- 现在导入谱面的同时就会自动解析音符了，之前为试听或演奏开始才解析
+- The notes are now automatically resolved when importing a sheet, instead of only at the beginning of listening or playing.
+- 增加了免费示例谱面
+- Added free sample sheets
+
 ## v0.99.2
 
 - 添加了选择试听音色的功能
