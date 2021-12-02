@@ -48,7 +48,7 @@ If (ErrorLevel)
 	MsgBox, % "get version`nERROR CODE=" ErrorLevel
 	ExitApp
 }
-RunWait, powershell -command "Compress-Archive -Path .\%binaryFilename% -DestinationPath %downloadFilename%",, Hide
+RunWait, powershell -command "Compress-Archive -Path .\%binaryFilename%`, .\free_sheets -DestinationPath %downloadFilename%",, Hide
 If (ErrorLevel)
 {
 	MsgBox, % "compress`nERROR CODE=" ErrorLevel
