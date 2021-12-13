@@ -30,17 +30,19 @@ if(clean_start && version_str==version){
 _temp_txt=
 (
 
-Videos::
-Coming soon...
+Videos(EN)::
+v0.99 Publish: https://youtu.be/11E3XElFfIg
 
-相关视频::
-首发视频: https://www.bilibili.com/video/BV1564y1Q7Uq/
+相关视频(CN)::
+0.99版本发布视频: https://www.bilibili.com/video/BV1Sr4y1Q7AZ/
 0.4版本更新视频: https://www.bilibili.com/video/BV1tA411g7XM/
+首发视频: https://www.bilibili.com/video/BV1564y1Q7Uq/
+
 编谱教程01: https://www.bilibili.com/video/BV1pX4y1G76r/
 
 
-Discord: https://discord.gg/5PCebykNaC
-官方社群: https://kaihei.co/IWXRLp
+Discord(EN): https://discord.gg/5PCebykNaC
+官方社群(CN): https://kaihei.co/IWXRLp
 
 ===============
 
