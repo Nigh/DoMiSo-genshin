@@ -10,6 +10,12 @@
 
 `自动弹琴人偶` 是一个帮助你在游戏《原神》中全自动演奏乐器的软件。
 
+## Video 视频
+- Bilibili (Zh):
+  - https://www.bilibili.com/video/BV1Sr4y1Q7AZ/
+  - https://www.bilibili.com/video/BV1564y1Q7Uq/
+- Youtube (En): https://www.youtube.com/watch?v=11E3XElFfIg
+
 ## Download(下载)
 
 - [Download Link-下载链接-1](https://download.fastgit.org/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
