@@ -1,4 +1,4 @@
-﻿
+
 
 #include meta.ahk
 
@@ -6,23 +6,6 @@ IfExist, updater.exe
 {
 	FileDelete, updater.exe
 }
-outputVersion(){
-	global
-	if A_Args.Length() > 0
-	{
-		for n, param in A_Args
-		{
-			RegExMatch(param, "--out=(\w+)", outName)
-			if(outName1=="version") {
-				f := FileOpen(versionFilename,"w","UTF-8-RAW")
-				f.Write(version)
-				f.Close()
-				ExitApp
-			}
-		}
-	}
-}
-
 IniRead, logLevel, setting.ini, update, log, 0
 IniRead, lastUpdate, setting.ini, update, last, 0
 IniRead, autoUpdate, setting.ini, update, autoupdate, 1

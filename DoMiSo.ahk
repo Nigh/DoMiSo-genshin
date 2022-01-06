@@ -11,22 +11,37 @@ FileEncoding, UTF-8
 
 #include meta.ahk
 
-outputVersion()
-if A_IsCompiled
-debug:=0
-Else
-debug:=1
+;@Ahk2Exe-IgnoreBegin
+if A_Args.Length() > 0
+{
+	for n, param in A_Args
+	{
+		RegExMatch(param, "--out=(\w+)", outName)
+		if(outName1=="version") {
+			f := FileOpen(versionFilename,"w","UTF-8-RAW")
+			f.Write(version)
+			f.Close()
+			ExitApp
+		}
+	}
+}
+;@Ahk2Exe-IgnoreEnd
 
-debugHotkey:=debug
-; debugHotkey:=0
+;@Ahk2Exe-SetCompanyName HelloWorks
+;@Ahk2Exe-SetName Domiso Genshin
+;@Ahk2Exe-SetDescription Domiso Genshin
+;@Ahk2Exe-SetVersion version
+;@Ahk2Exe-SetMainIcon icon.ico
+;@Ahk2Exe-ExeName Domiso-Genshin
+
 IniRead, nonAdmin, setting.ini, update, nonAdminMode, 0
 if(!nonAdmin){
 	UAC()
 }
-if debug
-{
+;@Ahk2Exe-IgnoreBegin
 	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
-}
+;@Ahk2Exe-IgnoreEnd
+
 ; Is it limited to in genshin use
 genshinLimit := 1
 
@@ -550,10 +565,11 @@ IniWrite, % version, setting.ini, update, ver
 log_flush()
 ExitApp
 
-#If debugHotkey
+;@Ahk2Exe-IgnoreBegin
 F5::ExitApp
 F6::Reload
-#If
+;@Ahk2Exe-IgnoreEnd
+
 F8::genshin_stop()
 F9::Gosub, func_btn_play
 
