@@ -4,6 +4,11 @@ Domiso原神特别版
 
 Domiso Genshin ver
 
+## v0.99.4
+
+- 现在更新源将会自动选择
+- The update source will now be automatically selected
+
 ## v0.99.3
 
 - 修复了试听音色保存的问题，之前在音色为第一种时退出会发生问题
