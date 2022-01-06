@@ -116,14 +116,7 @@ Gui, Add, pic, % "x" ui.statuBar.pos.x " y" ui.statuBar.pos.y " w" ui.statuBar.s
 
 
 hBitmap:={}
-if debug
-{
-	hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DEBUG","bold cFFCC9999 S48 Left")
-}
-Else
-{
-	hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFFCC9999 S48 Left")
-}
+hBitmap.title:=hBitmapBy2ColorAndText(ui.title.size.w,ui.title.size.h,ui.fgcolor,"DoMiSo","bold cFFCC9999 S48 Left")
 hBitmap.genshin:=hBitmapBy2ColorAndText(ui.ver.size.w,ui.ver.size.h,ui.fgcolor,"Genshin v" version "`n@github.com/Nigh","cFF666666 S14 Right")
 
 hBitmap.hotkey:=hBitmapBy2ColorAndText(ui.button1.size.w,20,ui.fgcolor,"F8:Stop F9:Start","bold cFFCC9999 S14 Left")

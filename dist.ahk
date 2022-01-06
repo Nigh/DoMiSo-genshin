@@ -36,7 +36,7 @@ If (ErrorLevel)
 	MsgBox, % "updater.ahk`nERROR CODE=" ErrorLevel
 	ExitApp
 }
-RunWait, ahk2exe.exe /in %ahkFilename% /out %binaryFilename% /icon icon.ico /compress 1
+RunWait, ahk2exe.exe /in %ahkFilename% /out %binaryFilename% /compress 1
 If (ErrorLevel)
 {
 	MsgBox, % ahkFilename "`nERROR CODE=" ErrorLevel
