@@ -4,6 +4,11 @@ Domiso原神特别版
 
 Domiso Genshin ver
 
+## v0.99.5
+
+- 取消了模拟按键的延迟，现在和弦的每个音符将会同时响应
+- The key simulation delay has been removed and each note of the chord will now respond simultaneously
+
 ## v0.99.4
 
 - 现在更新源将会自动选择

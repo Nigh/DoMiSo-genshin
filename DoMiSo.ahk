@@ -5,7 +5,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
-SetKeyDelay, 1, 1 
+SetKeyDelay, -1, -1 
 SendMode event 
 FileEncoding, UTF-8
 
@@ -246,6 +246,7 @@ genshin_play()
 	isBtn1Playing:=1
 	btn1update()
 	startTime:=nowTime//(freq/1000) + 500
+
 	SetTimer, genshin_main, 5 
 }
 
