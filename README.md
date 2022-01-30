@@ -272,10 +272,6 @@ Specify `startupmusic=0` to disable the opening music when the software is opene
 
 软件打开时会播放开场音乐，指定`startupmusic=0`可以关闭开场音乐。
 
-Specify `clean_start=1` to clear the preset content in the edit box when the software is opened.
-
-指定`clean_start=1`可以在软件打开后清除编辑框中的预置内容。
-
 Specify `nonAdminMode=1` to open the software in non-admin mode, where it **cannot** play music in the game, but you can drag `txt` or `dms` files directly into the edit box.
 
 指定`nonAdminMode=1`可以以非管理员模式打开软件，此时，软件**无法**在游戏中演奏音乐，但是可以直接拖放`txt`或`dms`文件至编辑框中。

@@ -1,32 +1,29 @@
 ﻿;~ guiDebug:=1
 #Include lib/Gdip.ahk
 pToken := Gdip_Startup()
-if(clean_start && version_str==version){
-	sample_sheet := ""
-} else {
-	FileCreateDir, % A_Temp "\domiso"
-	FileInstall, .\changes.md, % A_Temp "\domiso\changes.md", 1
-	changes_file := FileOpen(A_Temp "\domiso\changes.md", "r")
-	changes_txt:=""
+FileCreateDir, % A_Temp "\domiso"
+FileInstall, .\changes.md, % A_Temp "\domiso\changes.md", 1
+changes_file := FileOpen(A_Temp "\domiso\changes.md", "r")
+changes_txt:=""
 
-	sample_sheet := "`nv" version " update log:`n"
-	
-	_temp_txt:=""
-	_flag := 0
-	while(!changes_file.AtEOF) {
-		_lines:=changes_file.ReadLine()
-		if(RegExMatch(_lines, "^##\s")) {
-			_flag += 1
-		} else if(_flag == 1) {
-			_temp_txt .= _lines
-		}
-		if(_flag>1) {
-			Break
-		}
+sample_sheet := "`nv" version " update log:`n"
+
+_temp_txt:=""
+_flag := 0
+while(!changes_file.AtEOF) {
+	_lines:=changes_file.ReadLine()
+	if(RegExMatch(_lines, "^##\s")) {
+		_flag += 1
+	} else if(_flag == 1) {
+		_temp_txt .= _lines
 	}
-	changes_file.Close()
+	if(_flag>1) {
+		Break
+	}
+}
+changes_file.Close()
 
-	sample_sheet .= _temp_txt
+sample_sheet .= _temp_txt
 _temp_txt=
 (
 
@@ -51,9 +48,8 @@ bpm=180
 1/ 3/ 5/ +1/// +5/// ++1/
 
 )
-	sample_sheet .= _temp_txt
-	free(_temp_txt)
-}
+sample_sheet .= _temp_txt
+free(_temp_txt)
 
 ui:={}
 ui_gap:=23
@@ -92,7 +88,7 @@ ui.buttonPub.size:={w:ui.button1.size.w*2+ui_gap,h:ui.button1.size.h}
 ui.hatch:=50
 ui.bgcolor:=0xffdcdcdc
 ui.fgcolor:=0xffd2d4d3
-Gui, -Caption -DPIScale -AlwaysOnTop -Owner +OwnDialogs hwndgui_id
+Gui, main:New, -Caption -DPIScale -AlwaysOnTop -Owner +OwnDialogs hwndgui_id
 Gui, Color, % ui.fgcolor, % ui.bgcolor
 Gui, Add, pic, x0 y0 w1 h1 0xE hwndhBg, 
 Gui, Add, pic, % "x" ui.title.pos.x " y" ui.title.pos.y " w" ui.title.size.w " h" ui.title.size.h " gtitleMove 0xE hwndhTitle", 
