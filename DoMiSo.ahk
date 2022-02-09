@@ -42,9 +42,6 @@ if(!nonAdmin){
 	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
 ;@Ahk2Exe-IgnoreEnd
 
-; Is it limited to in genshin use
-genshinLimit := 1
-
 OnExit, TrueExit
 #Include log.ahk
 log_init()
@@ -75,7 +72,7 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 baseOffset := [0,2,4,5,7,9,11]
 
 ; TODO: add no midi mode
-; TODO: global mode
+; TODO: non admin & global mode display
 
 Notes := new NotePlayer()
 ; q w e r t y u
@@ -104,7 +101,7 @@ genshin_note_map := { 48:"z"
 , 83:"u" }
 
 IniRead, startup_music, setting.ini, update, startupMusic, 1
-IniRead, clean_start, setting.ini, update, startupEditorClean, 0
+IniRead, global_mode, setting.ini, setup, globalMode, 0
 
 #Include gui.ahk
 Gosub resolve
@@ -156,12 +153,10 @@ analyseNotes(Notes)
 }
 
 genshin_main:
-if(genshinLimit) {
+if(!global_mode) {
 	genshin_win_hwnd:=genshin_window_exist()
-} else {
-	genshin_win_hwnd:=1
 }
-if((genshin_play_p > genshin_play_array.Length()) or (!genshin_win_hwnd))
+if(genshin_play_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
 {
 	isBtn1Playing:=0
 	btn1update()
@@ -176,13 +171,16 @@ While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay
 	{
 		Return
 	}
-	if(genshinLimit) {
-		if WinActive("ahk_id " genshin_win_hwnd)
+	if(global_mode) {
+		if WinActive("ahk_id " domiso_active_hwnd)
 		{
 			Send, % genshin_play_array[genshin_play_p].note
 		}
 	} else {
-		Send, % genshin_play_array[genshin_play_p].note
+		if WinActive("ahk_id " genshin_win_hwnd)
+		{
+			Send, % genshin_play_array[genshin_play_p].note
+		}
 	}
 	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe GenshinImpact.exe
 	genshin_play_p += 1
@@ -231,10 +229,16 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 
 genshin_play()
 {
-	global startTime, freq, genshin_play_p, isBtn1Playing, genshinLimit
+	global startTime, freq, genshin_play_p, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
 	genshin_play_p := 1
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
-	if(genshinLimit) {
+	domiso_active_hwnd:=0
+	if(global_mode) {
+		domiso_active_hwnd:=WinExist("A")
+		if(domiso_active_hwnd == gui_id) {
+			Return
+		}
+	} else {
 		genshin_hwnd := genshin_window_active(genshin_window_exist())
 		WinWaitActive, ahk_id %genshin_hwnd%,, 0
 		if(ErrorLevel==1)
@@ -276,9 +280,14 @@ genshin_window_active(hwnd)
 
 
 func_btn_play:
+if(global_mode){
+	MsgBox, 0x41010, ERROR, USE Hotkey to play in global mode`n`n全局模式请使用热键开始演奏
+	Return
+}
+func_hotkey_play:
 if(nonAdmin)
 {
-	MsgBox, 0x41010, ERROR, Can not play in nonAdminMode
+	MsgBox, 0x41010, ERROR, Can not play in non Admin Mode`n`n在非管理员模式下无法自动演奏
 	Return
 }
 if(!isBtn1Playing)
@@ -339,7 +348,7 @@ if(sheet_mode!="normal")
 {
 	Return
 }
-Gui, Submit, NoHide
+Gui, main:Submit, NoHide
 pub_txt:=editer
 If Encrypt_dms_valid(pub_txt)!=1
 {
@@ -359,7 +368,7 @@ PostMessage, 0xA1, 2
 Return
 
 resolve:
-Gui, Submit, NoHide
+Gui, main:Submit, NoHide
 _Instrument:=instrument_select-1
 if(sheet_mode=="normal")
 {
@@ -572,6 +581,6 @@ F6::Reload
 ;@Ahk2Exe-IgnoreEnd
 
 F8::genshin_stop()
-F9::Gosub, func_btn_play
+F9::Gosub, func_hotkey_play
 
 #include menu.ahk

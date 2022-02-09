@@ -149,12 +149,14 @@ SetImage(hBtn3,hBitmap.button3)
 SetImage(hBtnFile,hBitmap.buttonFile)
 SetImage(hBtnPub,hBitmap.buttonPub)
 statubar_txt("v" version)
-Gui, Show, % "w" ui.size.w " h" ui.size.h
+Gui, main:Show, % "w" ui.size.w " h" ui.size.h
 
 OnMessage(0x200, "MouseMove")
 OnMessage(0x201, "MouseDown")
 OnMessage(0x203, "MouseDown")
 OnMessage(0x202, "MouseUp")
+
+#include setup_gui.ahk
 
 MouseUp(wParam, lParam, msg, hwnd)
 {
