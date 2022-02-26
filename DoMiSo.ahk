@@ -71,10 +71,14 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
 baseOffset := [0,2,4,5,7,9,11]
 
-; TODO: add no midi mode
 ; TODO: non admin & global mode display
 
 Notes := new NotePlayer()
+if(Notes.Device==0) {
+	midi_device := False
+} else {
+	midi_device := True
+}
 ; q w e r t y u
 ; a s d f g h j
 ; z x c v b n m
@@ -105,7 +109,7 @@ IniRead, global_mode, setting.ini, setup, globalMode, 0
 
 #Include gui.ahk
 Gosub resolve
-if(startup_music){
+if(midi_device && startup_music){
 	Notes.Start()
 }
 Return
@@ -294,30 +298,44 @@ if(!isBtn1Playing)
 {
 	Gosub resolve
 	genshin_array_sort(genshin_play_array)
-	Gosub, func_btn_listen_stop
+	if(midi_device) {
+		Gosub, func_btn_listen_stop
+	}
 	genshin_play()
 }
 Return
 
+no_midi_device_warning(){
+	MsgBox, 0x41010, ERROR, Midi output Device not found`n`n没有找到可供试听的Midi设备
+}
+
 func_btn_listen_stop:
+if(midi_device) {
 	Notes.Reset()
 	isBtn2Playing:=0
 	btn2update()
+} else {
+	no_midi_device_warning()
+}
 Return
 
 func_btn_listen:
-if(!isBtn2Playing)
-{
-	Gosub resolve
-	; Clipboard:=output
-	Notes.Start()
-	SetTimer, midi_playing_check, 1000
-	isBtn2Playing:=1
-	btn2update()
-}
-Else
-{
-	Gosub, func_btn_listen_stop
+if(midi_device) {
+	if(!isBtn2Playing)
+	{
+		Gosub resolve
+		; Clipboard:=output
+		Notes.Start()
+		SetTimer, midi_playing_check, 1000
+		isBtn2Playing:=1
+		btn2update()
+	}
+	Else
+	{
+		Gosub, func_btn_listen_stop
+	}
+} else {
+	no_midi_device_warning()
 }
 Return
 

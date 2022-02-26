@@ -2,7 +2,7 @@
 
 h2FontStyle:="s22 w600 c505050 q5"
 textFontStyle:="s12 w400 cblack q5"
-clientWidth:=750
+clientWidth:=450
 header_gap:=" y+30 "
 item_gap:=" y+10 "
 Gui, setup:New, +ToolWindow -DPIScale +Ownermain hwndsetup_id
@@ -10,7 +10,7 @@ gui, font, s32 w700 cc07070, Microsoft JhengHei
 gui, font, , Verdana
 gui, font, , MV Boli
 gui, add, Text, x10 y10,DoMiSo Setup
-gui, add, Text, x0 y+-50 +BackgroundTrans, ---------------------
+; gui, add, Text, x0 y+-50 +BackgroundTrans, ---------------------
 
 gui, font, %textFontStyle%
 

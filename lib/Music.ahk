@@ -52,8 +52,12 @@ class NotePlayer
 {
     __New()
     {
-        this.Device := new MIDIOutputDevice
-        this.Device.SetVolume(100)
+		try {
+        	this.Device := new MIDIOutputDevice
+        	this.Device.SetVolume(100)
+		} catch {
+			this.Device := 0
+		}
 
         this.pCallback := RegisterCallback(this.SequenceCallback,"F","",&this)
 
@@ -259,6 +263,7 @@ class MIDIOutputDevice
 
         ;open the MIDI output device
         hMIDIOutputDevice := 0
+        this.hMIDIOutputDevice := hMIDIOutputDevice
         Status := DllCall("winmm\midiOutOpen","UInt*",hMIDIOutputDevice,"UInt",DeviceID,"UPtr",0,"UPtr",0,"UInt",0) ;CALLBACK_NULL
         If Status != 0 ;MMSYSERR_NOERROR
             throw Exception("Could not open MIDI output device: " . DeviceID . ".")
