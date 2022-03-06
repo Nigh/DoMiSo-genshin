@@ -6,6 +6,10 @@ Domiso Genshin ver
 
 ## v0.99.6
 
+- 修改音符时值为浮点数计算，解决了拍子时值量化误差的积累问题
+- Note time values are now calculated as floating point numbers, solving the problem of accumulating quantization errors in beat time values
+- 增加了拍子统计，自动统计拍子数，方便对齐节拍
+- Beat count statistics have been added, automatically counting the number of beats and making it easier for you to align the beats
 - 增加了一个设置面板，右键单击任务栏图标进入设置
 - A settings panel has been added, right-click on the taskbar icon to enter settings
 - 增加对于没有midi输出的系统的支持，无midi输出的系统可以演奏，仅无法试听
