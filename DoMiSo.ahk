@@ -414,7 +414,7 @@ if(_Instrument<0 or _Instrument>127){
 }
 Notes.Instrument(_Instrument)
 base:=60
-beatTime:=Round(60000/80)
+beatTime:=Round(60000/80, 2)
 Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 {
 	chord:=0	;重置和弦标记
@@ -424,7 +424,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 	If(RegExMatch(A_LoopField,"i)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o))	;解析bpm标记
 	{
 		If(o1>0 And o1<480)
-		beatTime:=Round(60000/o1)
+		beatTime:=Round(60000/o1, 2)
 	}
 ;~ 	MsgBox, % NoteData
 	If(RegExMatch(A_LoopField,"i)1=([A-G]\d?\d?\#?|b?)",p))	;解析调号标记
@@ -490,7 +490,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 ;~ 			If(tune4!="")	;解析基本音符长度
 			If(1)
 			{
-				noteTime:=beatTime>>StrLen(tune4)
+				noteTime:=beatTime*(0.5**StrLen(tune4))
 				timeIncrement:=noteTime
 				this_note_base_beats:=0.5**StrLen(tune4)
 				this_note_inc_beats:=this_note_base_beats
@@ -507,7 +507,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 						If InStr(tmp%A_Index%,".")
 						{
 ;~ 							MsgBox, % noteTime "`n" timeIncrement
-							timeIncrement:=timeIncrement>>1
+							timeIncrement:=timeIncrement/2
 ;~ 							MsgBox, % timeIncrement
 							noteTime+=timeIncrement
 							this_note_inc_beats:=this_note_inc_beats/2
@@ -515,7 +515,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 						}
 						Else
 						{
-							timeIncrement:=beatTime>>(StrLen(tmp%A_Index%)-1)
+							timeIncrement:=beatTime*(0.5**(StrLen(tmp%A_Index%)-1))
 							noteTime+=timeIncrement
 
 							this_note_inc_beats:=0.5**(StrLen(tmp%A_Index%)-1)
@@ -532,8 +532,8 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 				{
 					Notes.Note(noteTune,noteTime,50).Delay(noteTime)
 					output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
-					genshin_output.="[" genshin_delay "]-(" genshin_note_map[noteTune] ")`n"
-					genshin_play_array.Push({"delay":genshin_delay,"note":genshin_note_map[noteTune]})
+					genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
+					genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
 					genshin_delay += noteTime
 					total_beats += this_note_beats
 				}
@@ -543,8 +543,8 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 					chordTime:=noteTime>chordTime ? noteTime : chordTime
 					this_chord_beats:=this_note_beats>this_chord_beats ? this_note_beats : this_chord_beats
 					output.="Notes.Note(" noteTune "," noteTime ",50)`n"
-					genshin_output.="[" genshin_delay "]-(" genshin_note_map[noteTune] ")`n"
-					genshin_play_array.Push({"delay":genshin_delay,"note":genshin_note_map[noteTune]})
+					genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
+					genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
 				}
 			}
 			Else
@@ -575,6 +575,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 	}
 }
 Notes.total_beats:=total_beats
+; Clipboard:=genshin_output
 ; 统计音符并显示到状态栏
 analyseNotes(Notes)
 Return
