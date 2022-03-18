@@ -42,9 +42,6 @@ if(!nonAdmin){
 	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
 ;@Ahk2Exe-IgnoreEnd
 
-; Is it limited to in genshin use
-genshinLimit := 1
-
 OnExit, TrueExit
 #Include log.ahk
 log_init()
@@ -74,10 +71,14 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
 baseOffset := [0,2,4,5,7,9,11]
 
-; TODO: add no midi mode
-; TODO: global mode
+; TODO: non admin & global mode display
 
 Notes := new NotePlayer()
+if(Notes.Device==0) {
+	midi_device := False
+} else {
+	midi_device := True
+}
 ; q w e r t y u
 ; a s d f g h j
 ; z x c v b n m
@@ -104,11 +105,11 @@ genshin_note_map := { 48:"z"
 , 83:"u" }
 
 IniRead, startup_music, setting.ini, update, startupMusic, 1
-IniRead, clean_start, setting.ini, update, startupEditorClean, 0
+IniRead, global_mode, setting.ini, setup, globalMode, 0
 
 #Include gui.ahk
 Gosub resolve
-if(startup_music){
+if(midi_device && startup_music){
 	Notes.Start()
 }
 Return
@@ -137,7 +138,7 @@ genshin_array_sort(ByRef array)
 
 analyseNotes(Notes)
 {
-	global genshin_note_map
+	global genshin_note_map, total_beats
 	notesCount:=0
 	genshinNotesCount:=0
 	For Key, Array in Notes.Timeline
@@ -152,16 +153,14 @@ analyseNotes(Notes)
 			}
 		}
 	}
-	statubar_txt(genshinNotesCount "/" notesCount " Notes | " Round(100*genshinNotesCount/notesCount, 2) "% playable in game")
+	statubar_txt(Round(Notes.total_beats,2) " beats | " genshinNotesCount "/" notesCount " Notes | " Round(100*genshinNotesCount/notesCount, 2) "% fits game")
 }
 
 genshin_main:
-if(genshinLimit) {
+if(!global_mode) {
 	genshin_win_hwnd:=genshin_window_exist()
-} else {
-	genshin_win_hwnd:=1
 }
-if((genshin_play_p > genshin_play_array.Length()) or (!genshin_win_hwnd))
+if(genshin_play_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
 {
 	isBtn1Playing:=0
 	btn1update()
@@ -176,13 +175,16 @@ While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay
 	{
 		Return
 	}
-	if(genshinLimit) {
-		if WinActive("ahk_id " genshin_win_hwnd)
+	if(global_mode) {
+		if WinActive("ahk_id " domiso_active_hwnd)
 		{
 			Send, % genshin_play_array[genshin_play_p].note
 		}
 	} else {
-		Send, % genshin_play_array[genshin_play_p].note
+		if WinActive("ahk_id " genshin_win_hwnd)
+		{
+			Send, % genshin_play_array[genshin_play_p].note
+		}
 	}
 	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe GenshinImpact.exe
 	genshin_play_p += 1
@@ -231,10 +233,16 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 
 genshin_play()
 {
-	global startTime, freq, genshin_play_p, isBtn1Playing, genshinLimit
+	global startTime, freq, genshin_play_p, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
 	genshin_play_p := 1
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
-	if(genshinLimit) {
+	domiso_active_hwnd:=0
+	if(global_mode) {
+		domiso_active_hwnd:=WinExist("A")
+		if(domiso_active_hwnd == gui_id) {
+			Return
+		}
+	} else {
 		genshin_hwnd := genshin_window_active(genshin_window_exist())
 		WinWaitActive, ahk_id %genshin_hwnd%,, 0
 		if(ErrorLevel==1)
@@ -276,39 +284,58 @@ genshin_window_active(hwnd)
 
 
 func_btn_play:
+if(global_mode){
+	MsgBox, 0x41010, ERROR, USE Hotkey to play in global mode`n`n全局模式请使用热键开始演奏
+	Return
+}
+func_hotkey_play:
 if(nonAdmin)
 {
-	MsgBox, 0x41010, ERROR, Can not play in nonAdminMode
+	MsgBox, 0x41010, ERROR, Can not play in non Admin Mode`n`n在非管理员模式下无法自动演奏
 	Return
 }
 if(!isBtn1Playing)
 {
 	Gosub resolve
 	genshin_array_sort(genshin_play_array)
-	Gosub, func_btn_listen_stop
+	if(midi_device) {
+		Gosub, func_btn_listen_stop
+	}
 	genshin_play()
 }
 Return
 
+no_midi_device_warning(){
+	MsgBox, 0x41010, ERROR, Midi output Device not found`n`n没有找到可供试听的Midi设备
+}
+
 func_btn_listen_stop:
+if(midi_device) {
 	Notes.Reset()
 	isBtn2Playing:=0
 	btn2update()
+} else {
+	no_midi_device_warning()
+}
 Return
 
 func_btn_listen:
-if(!isBtn2Playing)
-{
-	Gosub resolve
-	; Clipboard:=output
-	Notes.Start()
-	SetTimer, midi_playing_check, 1000
-	isBtn2Playing:=1
-	btn2update()
-}
-Else
-{
-	Gosub, func_btn_listen_stop
+if(midi_device) {
+	if(!isBtn2Playing)
+	{
+		Gosub resolve
+		; Clipboard:=output
+		Notes.Start()
+		SetTimer, midi_playing_check, 1000
+		isBtn2Playing:=1
+		btn2update()
+	}
+	Else
+	{
+		Gosub, func_btn_listen_stop
+	}
+} else {
+	no_midi_device_warning()
 }
 Return
 
@@ -339,7 +366,7 @@ if(sheet_mode!="normal")
 {
 	Return
 }
-Gui, Submit, NoHide
+Gui, main:Submit, NoHide
 pub_txt:=editer
 If Encrypt_dms_valid(pub_txt)!=1
 {
@@ -359,7 +386,7 @@ PostMessage, 0xA1, 2
 Return
 
 resolve:
-Gui, Submit, NoHide
+Gui, main:Submit, NoHide
 _Instrument:=instrument_select-1
 if(sheet_mode=="normal")
 {
@@ -375,6 +402,7 @@ if(sheet_mode="normal")
 	}
 }
 
+total_beats:=0
 genshin_play_array:={}
 genshin_output:=""
 genshin_delay:=0
@@ -386,16 +414,17 @@ if(_Instrument<0 or _Instrument>127){
 }
 Notes.Instrument(_Instrument)
 base:=60
-beatTime:=Round(60000/80)
+beatTime:=Round(60000/80, 2)
 Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 {
 	chord:=0	;重置和弦标记
 	chordTime:=0	;重置和弦长度
+	this_chord_beats:=0
 	
 	If(RegExMatch(A_LoopField,"i)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o))	;解析bpm标记
 	{
 		If(o1>0 And o1<480)
-		beatTime:=Round(60000/o1)
+		beatTime:=Round(60000/o1, 2)
 	}
 ;~ 	MsgBox, % NoteData
 	If(RegExMatch(A_LoopField,"i)1=([A-G]\d?\d?\#?|b?)",p))	;解析调号标记
@@ -457,12 +486,15 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 					noteTune-=1
 				}
 			}
-			
+
 ;~ 			If(tune4!="")	;解析基本音符长度
 			If(1)
 			{
-				noteTime:=beatTime>>StrLen(tune4)
+				noteTime:=beatTime*(0.5**StrLen(tune4))
 				timeIncrement:=noteTime
+				this_note_base_beats:=0.5**StrLen(tune4)
+				this_note_inc_beats:=this_note_base_beats
+				this_note_beats:=this_note_base_beats
 			}
 			
 			If(tune5!="")	;解析延音长度
@@ -475,14 +507,19 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 						If InStr(tmp%A_Index%,".")
 						{
 ;~ 							MsgBox, % noteTime "`n" timeIncrement
-							timeIncrement:=timeIncrement>>1
+							timeIncrement:=timeIncrement/2
 ;~ 							MsgBox, % timeIncrement
 							noteTime+=timeIncrement
+							this_note_inc_beats:=this_note_inc_beats/2
+							this_note_beats+=this_note_inc_beats
 						}
 						Else
 						{
-							timeIncrement:=beatTime>>(StrLen(tmp%A_Index%)-1)
+							timeIncrement:=beatTime*(0.5**(StrLen(tmp%A_Index%)-1))
 							noteTime+=timeIncrement
+
+							this_note_inc_beats:=0.5**(StrLen(tmp%A_Index%)-1)
+							this_note_beats+=this_note_inc_beats
 						}
 					}
 					Else
@@ -495,17 +532,19 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 				{
 					Notes.Note(noteTune,noteTime,50).Delay(noteTime)
 					output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
-					genshin_output.="[" genshin_delay "]-(" genshin_note_map[noteTune] ")`n"
-					genshin_play_array.Push({"delay":genshin_delay,"note":genshin_note_map[noteTune]})
+					genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
+					genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
 					genshin_delay += noteTime
+					total_beats += this_note_beats
 				}
 				Else If(noteTune>0)
 				{
 					Notes.Note(noteTune,noteTime,50)
 					chordTime:=noteTime>chordTime ? noteTime : chordTime
+					this_chord_beats:=this_note_beats>this_chord_beats ? this_note_beats : this_chord_beats
 					output.="Notes.Note(" noteTune "," noteTime ",50)`n"
-					genshin_output.="[" genshin_delay "]-(" genshin_note_map[noteTune] ")`n"
-					genshin_play_array.Push({"delay":genshin_delay,"note":genshin_note_map[noteTune]})
+					genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
+					genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
 				}
 			}
 			Else
@@ -513,6 +552,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 				Notes.Delay(noteTime)
 				output.="Notes.Delay(" noteTime ")`n"
 				genshin_delay += noteTime
+				total_beats += this_note_beats
 			}
 		}
 		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析括号
@@ -521,6 +561,7 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 			{
 				chord:=1
 				chordTime:=0
+				this_chord_beats:=0
 			}
 			Else If(mark1=")" And chord=1)
 			{
@@ -528,10 +569,13 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 				chord:=0
 				output.="Notes.Delay(" chordTime ")`n"
 				genshin_delay += chordTime
+				total_beats += this_chord_beats
 			}
 		}
 	}
 }
+Notes.total_beats:=total_beats
+; Clipboard:=genshin_output
 ; 统计音符并显示到状态栏
 analyseNotes(Notes)
 Return
@@ -572,6 +616,6 @@ F6::Reload
 ;@Ahk2Exe-IgnoreEnd
 
 F8::genshin_stop()
-F9::Gosub, func_btn_play
+F9::Gosub, func_hotkey_play
 
 #include menu.ahk
