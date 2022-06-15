@@ -419,35 +419,22 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 {
 	chord:=0	;重置和弦标记
 	chordTime:=0	;重置和弦长度
+	multiplet:=0	;重置多连音标记
 	this_chord_beats:=0
 	
-	If(RegExMatch(A_LoopField,"i)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o))	;解析bpm标记
+	If(RegExMatch(A_LoopField,"iO)(?:b|B)(?:p|P)(?:m|M)=(\d+)",o))	;解析bpm标记
 	{
-		If(o1>0 And o1<480)
-		beatTime:=Round(60000/o1, 2)
+		bpm_parser(o)
 	}
 ;~ 	MsgBox, % NoteData
-	If(RegExMatch(A_LoopField,"i)1=([A-G]\d?\d?\#?|b?)",p))	;解析调号标记
+	If(RegExMatch(A_LoopField,"iO)1=([A-G]\d?\d?\#?|b?)",p))	;解析调号标记
 	{
-		If(RegExMatch(NoteData,"(\d\d?\d?)\s" p1 "\s",q))
-		base:=q1
+		tone_parser(p)
 	}
 	
-	If(RegExMatch(A_LoopField,"i)rollback=(\d+\.?\d*)",r))	;解析rollback标记
+	If(RegExMatch(A_LoopField,"iO)rollback=(\d+\.?\d*)",r))	;解析rollback标记
 	{
-;~ 		MsgBox, % "rollback=" r1 "`nOffset=" Notes.Offset
-		If(r1*beatTime<=Notes.Offset)
-		{
-			Notes.Delay(-r1*beatTime)
-			output.="Notes.Delay(" -r1*beatTime ")`n"
-			genshin_delay -= r1*beatTime
-		}
-		Else
-		{
-			Notes.Offset:=0
-			output.="Notes.Offset:=0`n"
-			genshin_delay := 0
-		}
+		rollback_parser(r)
 	}
 	
 	/*
@@ -461,116 +448,17 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 	currentLine:=A_LoopField
 	Loop, Parse, currentLine, %A_Space%%A_Tab%
 	{
-		If(RegExMatch(A_LoopField,"iS)^(\-*|\+*)([0-7])(\#|b)?(\/*)((?:(?:\-\/*)|(?:\.))*)\s?$",tune))	;解析音符
+		If(RegExMatch(A_LoopField,"iSO)^(\-*|\+*)([0-7])(\#|b)?(\/*)((?:(?:\-\/*)|(?:\.))*)\s?$",tune))	;解析音符
 		{
-			noteTime:=beatTime
-			
-			If(tune1!="")	;解析八度偏移量
-			{
-				If InStr(tune1, "-")
-				offs:=-StrLen(tune1)
-				Else If InStr(tune1, "+")
-				offs:=StrLen(tune1)
-				Else offs:=0
-			}
-			Else offs:=0
-			
-			noteTune:=base+baseOffset[tune2+0]+offs*12	;解析基本音
-			
-			If(tune3!="")	;解析升降调
-			{
-				If InStr(tune3, "#"){
-					noteTune+=1
-				}
-				Else If InStr(tune3, "b"){
-					noteTune-=1
-				}
-			}
-
-;~ 			If(tune4!="")	;解析基本音符长度
-			If(1)
-			{
-				noteTime:=beatTime*(0.5**StrLen(tune4))
-				timeIncrement:=noteTime
-				this_note_base_beats:=0.5**StrLen(tune4)
-				this_note_inc_beats:=this_note_base_beats
-				this_note_beats:=this_note_base_beats
-			}
-			
-			If(tune5!="")	;解析延音长度
-			{
-				RegExMatch(tune5,"((?:\-\/*)|(?:\.))((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?",tmp)
-				Loop
-				{
-					If(tmp%A_Index%!="")
-					{
-						If InStr(tmp%A_Index%,".")
-						{
-;~ 							MsgBox, % noteTime "`n" timeIncrement
-							timeIncrement:=timeIncrement/2
-;~ 							MsgBox, % timeIncrement
-							noteTime+=timeIncrement
-							this_note_inc_beats:=this_note_inc_beats/2
-							this_note_beats+=this_note_inc_beats
-						}
-						Else
-						{
-							timeIncrement:=beatTime*(0.5**(StrLen(tmp%A_Index%)-1))
-							noteTime+=timeIncrement
-
-							this_note_inc_beats:=0.5**(StrLen(tmp%A_Index%)-1)
-							this_note_beats+=this_note_inc_beats
-						}
-					}
-					Else
-					Break
-				}
-			}
-			If(noteTune>0 or chord=1)
-			{
-				If(!chord)
-				{
-					Notes.Note(noteTune,noteTime,50).Delay(noteTime)
-					output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
-					genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
-					genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
-					genshin_delay += noteTime
-					total_beats += this_note_beats
-				}
-				Else If(noteTune>0)
-				{
-					Notes.Note(noteTune,noteTime,50)
-					chordTime:=noteTime>chordTime ? noteTime : chordTime
-					this_chord_beats:=this_note_beats>this_chord_beats ? this_note_beats : this_chord_beats
-					output.="Notes.Note(" noteTune "," noteTime ",50)`n"
-					genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
-					genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
-				}
-			}
-			Else
-			{
-				Notes.Delay(noteTime)
-				output.="Notes.Delay(" noteTime ")`n"
-				genshin_delay += noteTime
-				total_beats += this_note_beats
-			}
+			note_parser(tune)
 		}
-		If(RegExMatch(A_LoopField,"iS)(\(|\))",mark))	;解析括号
+		If(RegExMatch(A_LoopField,"iSO)(\(|\{)",mark))	;解析左括号
 		{
-			If(mark1="(" And chord=0)
-			{
-				chord:=1
-				chordTime:=0
-				this_chord_beats:=0
-			}
-			Else If(mark1=")" And chord=1)
-			{
-				Notes.Delay(chordTime)
-				chord:=0
-				output.="Notes.Delay(" chordTime ")`n"
-				genshin_delay += chordTime
-				total_beats += this_chord_beats
-			}
+			bracket_start_parser(mark)
+		}
+		If(RegExMatch(A_LoopField,"iSO)(\)|\})((?:\/|\-|\.)*)\s?$",mark))	;解析右括号
+		{
+			bracket_end_parser(mark)
 		}
 	}
 }
@@ -579,6 +467,231 @@ Notes.total_beats:=total_beats
 ; 统计音符并显示到状态栏
 analyseNotes(Notes)
 Return
+
+bpm_parser(obj)
+{
+	global
+	If(o.Value(1)>30 And o.Value(1)<600)
+	beatTime:=Round(60000/o.Value(1), 2)
+}
+
+tone_parser(obj)
+{
+	global
+	If(RegExMatch(NoteData,"(\d\d?\d?)\s" obj.Value(1) "\s",q))
+	base:=q1	
+}
+
+rollback_parser(obj)
+{
+	global
+	If(obj.Value(1)*beatTime<=Notes.Offset)
+	{
+		Notes.Delay(-obj.Value(1)*beatTime)
+		output.="Notes.Delay(" -obj.Value(1)*beatTime ")`n"
+		genshin_delay -= obj.Value(1)*beatTime
+	}
+	Else
+	{
+		Notes.Offset:=0
+		output.="Notes.Offset:=0`n"
+		genshin_delay := 0
+	}
+}
+
+note_parser(obj)
+{
+	global
+	noteTime:=beatTime
+	
+	If(tune.Value(1)!="")	;解析八度偏移量
+	{
+		If InStr(tune.Value(1), "-")
+		offs:=-StrLen(tune.Value(1))
+		Else If InStr(tune.Value(1), "+")
+		offs:=StrLen(tune.Value(1))
+		Else offs:=0
+	}
+	Else offs:=0
+	
+	noteTune:=base+baseOffset[tune.Value(2)+0]+offs*12	;解析基本音
+	
+	If(tune.Value(3)!="")	;解析升降调
+	{
+		If InStr(tune.Value(3), "#"){
+			noteTune+=1
+		}
+		Else If InStr(tune.Value(3), "b"){
+			noteTune-=1
+		}
+	}
+
+;~ 			If(tune.Value(4)!="")	;解析基本音符长度
+	If(1)
+	{
+		noteTime:=beatTime*(0.5**StrLen(tune.Value(4)))
+		timeIncrement:=noteTime
+		this_note_base_beats:=0.5**StrLen(tune.Value(4))
+		this_note_inc_beats:=this_note_base_beats
+		this_note_beats:=this_note_base_beats
+	}
+	
+	If(tune.Value(5)!="")	;解析延音长度
+	{
+		RegExMatch(tune.Value(5),"((?:\-\/*)|(?:\.))((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?",tmp)
+		Loop
+		{
+			If(tmp%A_Index%!="")
+			{
+				If InStr(tmp%A_Index%,".")
+				{
+;~ 							MsgBox, % noteTime "`n" timeIncrement
+					timeIncrement:=timeIncrement/2
+;~ 							MsgBox, % timeIncrement
+					noteTime+=timeIncrement
+					this_note_inc_beats:=this_note_inc_beats/2
+					this_note_beats+=this_note_inc_beats
+				}
+				Else
+				{
+					timeIncrement:=beatTime*(0.5**(StrLen(tmp%A_Index%)-1))
+					noteTime+=timeIncrement
+
+					this_note_inc_beats:=0.5**(StrLen(tmp%A_Index%)-1)
+					this_note_beats+=this_note_inc_beats
+				}
+			}
+			Else
+			Break
+		}
+	}
+	If(noteTune>0 or chord=1 or multiplet=1)
+	{
+		If(!chord and !multiplet)
+		{
+			Notes.Note(noteTune,noteTime,50).Delay(noteTime)
+			output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
+			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
+			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
+			genshin_delay += noteTime
+			total_beats += this_note_beats
+		}
+		Else If(chord and noteTune>0)
+		{
+			chord_cache.Push({"note":noteTune,"time":noteTime})
+			chordTime:=noteTime>chordTime ? noteTime : chordTime
+			; Notes.Note(noteTune,noteTime,50)
+			; output.="Notes.Note(" noteTune "," noteTime ",50)`n"
+			; genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
+			; genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
+		}
+		Else If(multiplet)
+		{
+			multiplet_cache.Push({"note":noteTune,"time":noteTime})
+		}
+	}
+	Else
+	{
+		Notes.Delay(noteTime)
+		output.="Notes.Delay(" noteTime ")`n"
+		genshin_delay += noteTime
+		total_beats += this_note_beats
+	}
+}
+
+bracket_start_parser(obj)
+{
+	global
+	If(mark.Value(1)="(" And chord=0)
+	{
+		chord:=1
+		chord_cache:={}
+		chordTime:=0
+		this_chord_beats:=0
+	}
+	If(mark.Value(1)="{" And multiplet=0)
+	{
+		multiplet:=1
+		multiplet_cache:={}
+	}
+}
+; 解析额外长度标记
+extra_length_parser(basetime, src)
+{
+	global beatTime
+	s := 1
+	p := RegExMatch(src, "iO)(\/|\-|\.+)", obj, s)
+	while(p)
+	{
+		if(obj.Value(1)="/")
+		{
+			basetime /= 2
+		} else if(obj.Value(1)="-") {
+			basetime += beatTime
+		} else {
+			db:=basetime
+			Loop, % obj.Len(1)
+			{
+				db *= 0.5
+				basetime += db
+			}
+		}
+		s += obj.Len(1)
+		p := RegExMatch(src, "iO)(\/|\-|\.+)", obj, s)
+	}
+	return basetime
+}
+bracket_end_parser(mark)
+{
+	global
+	local d,p,s,obj,db,mlen,mk,mtime
+	If(mark.Value(1)=")" And chord=1)
+	{
+		chord:=0
+		if(mark.Value(2)!="")
+		{
+			chordTime := extra_length_parser(chordTime, mark.Value(2))
+		}
+		Loop, % chord_cache.Length()
+		{
+			Notes.Note(chord_cache[A_Index].note, chordTime, 50)
+			; chord_cache[A_Index].time
+			output.="Notes.Note(" chord_cache[A_Index].note "," chordTime ",50)`n"
+			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[chord_cache[A_Index].note] ")`n"
+			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[chord_cache[A_Index].note]})
+		}
+		Notes.Delay(chordTime)
+		chord:=0
+		output.="Notes.Delay(" chordTime ")`n"
+		genshin_delay += chordTime
+		this_chord_beats := chordTime/beatTime
+		total_beats += this_chord_beats
+	}
+	If(mark.Value(1)="}" And multiplet=1)
+	{
+		multiplet:=0
+		mtime:=beatTime
+		if(mark.Value(2)!="")
+		{
+			mtime := extra_length_parser(mtime, mark.Value(2))
+		}
+		mlen:=0
+		Loop, % multiplet_cache.Length()
+		{
+			mlen+=multiplet_cache[A_Index].time
+		}
+		mk:=mtime/mlen
+		Loop, % multiplet_cache.Length()
+		{
+			Notes.Note(multiplet_cache[A_Index].note, mk*multiplet_cache[A_Index].time, 50).Delay(mk*multiplet_cache[A_Index].time)
+			output.="Notes.Note(" multiplet_cache[A_Index].note "," mk*multiplet_cache[A_Index].time ",50)`n"
+			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[multiplet_cache[A_Index].note] ")`n"
+			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[multiplet_cache[A_Index].note]})
+			genshin_delay+=mk*multiplet_cache[A_Index].time
+		}
+		total_beats += mtime/beatTime
+	}
+}
 
 UAC()
 {
