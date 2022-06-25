@@ -256,36 +256,12 @@ Donate(捐助)
 
 ## Advanced Function(进阶功能)
 
-### Setting.ini
-
-![](assets/setting.png)
-
-After successfully running the software for the first time, a configuration file `setting.ini` will be generated in the same directory.
-
-在第一次成功运行软件后，会在同目录下生成`setting.ini`的配置文件。
-
-Automatic updates are turned on by default, specify `autoupdate=0` to turn them off.
-
-软件的自动更新是默认开启的，指定`autoupdate=0`可以关闭自动更新。
-
-Specify `startupmusic=0` to disable the opening music when the software is opened.
-
-软件打开时会播放开场音乐，指定`startupmusic=0`可以关闭开场音乐。
-
-Specify `nonAdminMode=1` to open the software in non-admin mode, where it **cannot** play music in the game, but you can drag `txt` or `dms` files directly into the edit box.
-
-指定`nonAdminMode=1`可以以非管理员模式打开软件，此时，软件**无法**在游戏中演奏音乐，但是可以直接拖放`txt`或`dms`文件至编辑框中。
-
-Specify `log=0`,`log=1`,`log=2` to enable different levels of logging. The higher the number, the more detailed the log.
-
-指定`log=0`,`log=1`,`log=2`启用不同等级的日志。数字越大，日志越详细。
-
-Specify `mirror=0` to change the update source to `github.com`, the default update source for the software is `fastgit.org`. Mainland China users can try specifying `mirror=cnpmjs` to change the update source when updates fail frequently.
-
-指定`mirror=0`可以将升级源更改为`github.com`，软件默认更新源是`fastgit.org`。中国大陆用户在升级频繁失败时，可以尝试指定 `mirror=cnpmjs` 更换升级源。
-
 ### Note statistics(音符统计)
 
 The status bar now shows statistics on the number of notes and the number of notes that can be played in the game.
 
 状态栏现在可以显示音符数量与能在游戏中演奏的音符数量的统计信息。
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/Nigh/DoMiSo-genshin.svg)](https://starchart.cc/Nigh/DoMiSo-genshin)
