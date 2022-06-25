@@ -34,18 +34,20 @@ v0.99 Publish: https://youtu.be/11E3XElFfIg
 0.99版本发布视频: https://www.bilibili.com/video/BV1Sr4y1Q7AZ/
 0.4版本更新视频: https://www.bilibili.com/video/BV1tA411g7XM/
 首发视频: https://www.bilibili.com/video/BV1564y1Q7Uq/
-
 编谱教程01: https://www.bilibili.com/video/BV1pX4y1G76r/
 
 
 Discord(EN): https://discord.gg/5PCebykNaC
 官方社群(CN): https://kaihei.co/IWXRLp
 
+更多谱面尽在官方社群哦
+
 ===============
 
 1=C
-bpm=180
-1/ 3/ 5/ +1/// +5/// ++1/
+bpm=96
+-6#------- ~2------- ~4------- ~+5. ~+6. ~++2. +6/ +6---- 0
+-6------- ~1------- ~3------- ~5------- ~+4. ~+5. ~++1. +5/ +5---- 0
 
 )
 sample_sheet .= _temp_txt

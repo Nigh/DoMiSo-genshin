@@ -20,20 +20,24 @@ mirrorList:=["https://github.com"
 ,"https://github.com.cnpmjs.org"]
 updatemirrorTried:=Array()
 today:=A_MM . A_DD
-if(autoUpdate) {
-	if(lastUpdate!=today) {
-		log_write("Getting Update",0)
-		; MsgBox,,Update,Getting Update`n获取最新版本,2
-		get_latest_version()
+if(betaBuild!=1) {
+	if(autoUpdate) {
+		if(lastUpdate!=today) {
+			log_write("Getting Update",0)
+			; MsgBox,,Update,Getting Update`n获取最新版本,2
+			get_latest_version()
+		} else {
+			TrayTip,,% name_en " Start`nv" version "`n" name_zh "启动"
+		}
 	} else {
-		TrayTip,,% name_en " Start`nv" version "`n" name_zh "启动"
+		log_write("Update Skiped",0)
+		if(lastUpdate!=today) {
+			TrayTip, Update,Update Skiped`n跳过升级`n`nCurrent version`n当前版本`nv%version%
+			IniWrite, % A_MM A_DD, setting.ini, update, last
+		}
 	}
 } else {
-	log_write("Update Skiped",0)
-	if(lastUpdate!=today) {
-		TrayTip, Update,Update Skiped`n跳过升级`n`nCurrent version`n当前版本`nv%version%
-		IniWrite, % A_MM A_DD, setting.ini, update, last
-	}
+	TrayTip,,% name_en " BETA Start`nv" version "`n" name_zh "内测版本启动"
 }
 
 get_latest_version(){

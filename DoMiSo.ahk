@@ -39,8 +39,11 @@ if(!nonAdmin){
 	UAC()
 }
 ;@Ahk2Exe-IgnoreBegin
-	MsgBox, 0x41030,ATTENTION,You are running DEBUG version of the program!!!
+	MsgBox, 0x41030,ATTENTION,You are running DEBUG version!!!`注意，正在运行的是测试版本。
 ;@Ahk2Exe-IgnoreEnd
+if(betaBuild=1) {
+	MsgBox, 0x41030,ATTENTION,You are running BETA version!!!`注意，正在运行的是内测版本。
+}
 
 OnExit, TrueExit
 #Include log.ahk
@@ -71,7 +74,7 @@ DllCall("QueryPerformanceFrequency", "Int64P", freq)
 
 baseOffset := [0,2,4,5,7,9,11]
 
-; TODO: non admin & global mode display
+; DONE: non admin & global mode display
 
 Notes := new NotePlayer()
 if(Notes.Device==0) {
@@ -407,6 +410,12 @@ genshin_play_array:={}
 genshin_output:=""
 genshin_delay:=0
 
+arpeggio_start:=0	;琶音起始
+; TODO: 拍子计算直接修改为最后一个音符的结束时间/beatTime
+; TODO: 增加设定琶音延时的语法
+arpeggio_delay_set:=40	;琶音递增延时
+arpeggio_delay:=0	;琶音累计延时
+
 output:=""
 Notes.Reset()
 if(_Instrument<0 or _Instrument>127){
@@ -438,17 +447,17 @@ Loop, Parse, parse_content, `n,`r%A_Space%%A_Tab%	;逐行解析
 	}
 	
 	/*
-	tune1:音阶
-	tune2:音符
-	tune3:升降调
-	tune4:本音长
-	tune5:延音长
+	琶音 arpeggio
+	音阶 scale
+	音符 note
+	升降调 semitone
+	时值 notelen
 	*/
 	
 	currentLine:=A_LoopField
 	Loop, Parse, currentLine, %A_Space%%A_Tab%
 	{
-		If(RegExMatch(A_LoopField,"iSO)^(\-*|\+*)([0-7])(\#|b)?(\/*)((?:(?:\-\/*)|(?:\.))*)\s?$",tune))	;解析音符
+		If(RegExMatch(A_LoopField,"iSO)^(?P<arpeggio>\~)?(?P<scale>\-*|\+*)(?P<note>[0-7])(?P<semitone>\#|b)?(?P<notelen>(?:\/|\-|\.)*)\s?$",tune))	;解析音符
 		{
 			note_parser(tune)
 		}
@@ -499,29 +508,29 @@ rollback_parser(obj)
 	}
 }
 
-note_parser(obj)
+note_parser(tune)
 {
 	global
 	noteTime:=beatTime
 	
-	If(tune.Value(1)!="")	;解析八度偏移量
+	If(tune.Value("scale")!="")	;解析八度偏移量
 	{
-		If InStr(tune.Value(1), "-")
-		offs:=-StrLen(tune.Value(1))
-		Else If InStr(tune.Value(1), "+")
-		offs:=StrLen(tune.Value(1))
+		If InStr(tune.Value("scale"), "-")
+		offs:=-StrLen(tune.Value("scale"))
+		Else If InStr(tune.Value("scale"), "+")
+		offs:=StrLen(tune.Value("scale"))
 		Else offs:=0
 	}
 	Else offs:=0
 	
-	noteTune:=base+baseOffset[tune.Value(2)+0]+offs*12	;解析基本音
+	noteTune:=base+baseOffset[tune.Value("note")+0]+offs*12	;解析基本音
 	
-	If(tune.Value(3)!="")	;解析升降调
+	If(tune.Value("semitone")!="")	;解析升降调
 	{
-		If InStr(tune.Value(3), "#"){
+		If InStr(tune.Value("semitone"), "#"){
 			noteTune+=1
 		}
-		Else If InStr(tune.Value(3), "b"){
+		Else If InStr(tune.Value("semitone"), "b"){
 			noteTune-=1
 		}
 	}
@@ -529,74 +538,46 @@ note_parser(obj)
 ;~ 			If(tune.Value(4)!="")	;解析基本音符长度
 	If(1)
 	{
-		noteTime:=beatTime*(0.5**StrLen(tune.Value(4)))
-		timeIncrement:=noteTime
-		this_note_base_beats:=0.5**StrLen(tune.Value(4))
-		this_note_inc_beats:=this_note_base_beats
-		this_note_beats:=this_note_base_beats
+		noteTime:=extra_length_parser(beatTime, tune.Value("notelen"))
+		this_note_beats:=noteTime/beatTime
 	}
-	
-	If(tune.Value(5)!="")	;解析延音长度
-	{
-		RegExMatch(tune.Value(5),"((?:\-\/*)|(?:\.))((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?((?:\-\/*)|(?:\.))?",tmp)
-		Loop
-		{
-			If(tmp%A_Index%!="")
-			{
-				If InStr(tmp%A_Index%,".")
-				{
-;~ 							MsgBox, % noteTime "`n" timeIncrement
-					timeIncrement:=timeIncrement/2
-;~ 							MsgBox, % timeIncrement
-					noteTime+=timeIncrement
-					this_note_inc_beats:=this_note_inc_beats/2
-					this_note_beats+=this_note_inc_beats
-				}
-				Else
-				{
-					timeIncrement:=beatTime*(0.5**(StrLen(tmp%A_Index%)-1))
-					noteTime+=timeIncrement
-
-					this_note_inc_beats:=0.5**(StrLen(tmp%A_Index%)-1)
-					this_note_beats+=this_note_inc_beats
-				}
-			}
-			Else
-			Break
+	if(chord=1) {
+		if(noteTune>0) {
+			chord_cache.Push({"note":noteTune,"time":noteTime})
+			chordTime:=noteTime>chordTime ? noteTime : chordTime
 		}
-	}
-	If(noteTune>0 or chord=1 or multiplet=1)
-	{
-		If(!chord and !multiplet)
+	} else if(multiplet=1) {
+		multiplet_cache.Push({"note":noteTune,"time":noteTime})
+	} else {
+		If(tune.Value("arpeggio")!="")	;解析琶音标记
 		{
+			if(noteTime<=arpeggio_delay+20) {
+				Return
+			}
+			Notes.Delay(-last_noteTime)
+			Notes.Delay(arpeggio_delay_set)
+			genshin_delay+=arpeggio_delay_set-last_noteTime
+			arpeggio_delay+=arpeggio_delay_set
+			noteTime-=arpeggio_delay
+		} else {
+			arpeggio_start:=genshin_delay
+			arpeggio_delay:=0
+		}
+		if(noteTune>0) {
 			Notes.Note(noteTune,noteTime,50).Delay(noteTime)
 			output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
 			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
 			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
 			genshin_delay += noteTime
 			total_beats += this_note_beats
-		}
-		Else If(chord and noteTune>0)
-		{
-			chord_cache.Push({"note":noteTune,"time":noteTime})
-			chordTime:=noteTime>chordTime ? noteTime : chordTime
-			; Notes.Note(noteTune,noteTime,50)
-			; output.="Notes.Note(" noteTune "," noteTime ",50)`n"
-			; genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
-			; genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
-		}
-		Else If(multiplet)
-		{
-			multiplet_cache.Push({"note":noteTune,"time":noteTime})
+		} else {
+			Notes.Delay(noteTime)
+			output.="Notes.Delay(" noteTime ")`n"
+			genshin_delay += noteTime
+			total_beats += this_note_beats
 		}
 	}
-	Else
-	{
-		Notes.Delay(noteTime)
-		output.="Notes.Delay(" noteTime ")`n"
-		genshin_delay += noteTime
-		total_beats += this_note_beats
-	}
+	last_noteTime:=noteTime
 }
 
 bracket_start_parser(obj)
@@ -683,7 +664,10 @@ bracket_end_parser(mark)
 		mk:=mtime/mlen
 		Loop, % multiplet_cache.Length()
 		{
-			Notes.Note(multiplet_cache[A_Index].note, mk*multiplet_cache[A_Index].time, 50).Delay(mk*multiplet_cache[A_Index].time)
+			if(multiplet_cache[A_Index].note > 0) {
+				Notes.Note(multiplet_cache[A_Index].note, mk*multiplet_cache[A_Index].time, 50)
+			}
+			Notes.Delay(mk*multiplet_cache[A_Index].time)
 			output.="Notes.Note(" multiplet_cache[A_Index].note "," mk*multiplet_cache[A_Index].time ",50)`n"
 			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[multiplet_cache[A_Index].note] ")`n"
 			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[multiplet_cache[A_Index].note]})

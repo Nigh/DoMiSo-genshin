@@ -2,7 +2,13 @@
 
 Domiso原神特别版
 
-Domiso Genshin ver
+Domiso for Genshin
+
+## v0.99.7
+
+- 扩展了和弦语法
+- 新增连音语法
+- 新增琶音语法
 
 ## v0.99.6
 
