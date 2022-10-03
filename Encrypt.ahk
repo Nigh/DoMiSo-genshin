@@ -125,14 +125,16 @@ Encrypt_dms_enc(v)
 			ciphertext.=A_LoopField "`r`n"
 		}
 	}
+	plainLen := VarSetCapacity(plaintext, -1)
+	cipherLen := VarSetCapacity(ciphertext, -1)
 
 	; Put明文段raw长度
-	NumPut(StrLen(plaintext)*2, head, 12, "UShort")
+	NumPut(plainLen, head, 12, "UShort")
 	; Put密文段raw长度
-	NumPut(StrLen(ciphertext)*2, head, 14, "UShort")
+	NumPut(cipherLen, head, 14, "UShort")
 
 	; 生成密钥
-	Loop, % StrLen(plaintext)*2
+	Loop, % plainLen
 	{
 		r_index:=(A_Index-1)&0x3
 		enc_key[r_index+1]^=NumGet(plaintext, A_Index-1, "UChar")
@@ -149,10 +151,10 @@ Encrypt_dms_enc(v)
 		cipher_key[A_Index]:=NumGet(head, 7+A_Index, "UChar")^enc_key[A_Index]
 	}
 	; 使用加密密钥加密密文段
-	Loop, % StrLen(ciphertext)*2
+	Loop, % cipherLen
 	{
-		r_index:=(A_Index-1)&0x3
-		NumPut(NumGet(ciphertext,A_Index-1,"UChar")^cipher_key[r_index+1],ciphertext,A_Index-1,"UChar")
+		r_index:=((A_Index-1)&0x3)+1
+		NumPut(NumGet(ciphertext,A_Index-1,"UChar")^cipher_key[r_index],ciphertext,A_Index-1,"UChar")
 	}
 	; 添加文件头
 	loop, 8
@@ -162,21 +164,19 @@ Encrypt_dms_enc(v)
 	; 拼接文件
 	output:=""
 	head_len:=16
-	plain_len:=StrLen(plaintext)*2
-	cipher_len:=StrLen(ciphertext)*2
-	output_len:=head_len+plain_len+cipher_len
+	output_len:=head_len+plainLen+cipherLen
 	VarSetCapacity(output,output_len,0x00)
 	Loop, % head_len
 	{
 		NumPut(NumGet(head, A_Index-1, "UChar"), output, A_Index-1, "UChar")
 	}
-	Loop, % plain_len
+	Loop, % plainLen
 	{
 		NumPut(NumGet(plaintext, A_Index-1, "UChar"), output, head_len+A_Index-1, "UChar")
 	}
-	Loop, % cipher_len
+	Loop, % cipherLen
 	{
-		NumPut(NumGet(ciphertext, A_Index-1, "UChar"), output, head_len+plain_len+A_Index-1, "UChar")
+		NumPut(NumGet(ciphertext, A_Index-1, "UChar"), output, head_len+plainLen+A_Index-1, "UChar")
 	}
 	filename:="DoMiSoCipher_" A_Now ".dms"
 	File := FileOpen(filename, "w", "UTF-8-RAW")
