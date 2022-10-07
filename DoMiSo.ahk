@@ -142,7 +142,7 @@ genshin_array_sort(ByRef array)
 
 analyseNotes(Notes)
 {
-	global genshin_note_map, total_beats
+	global genshin_note_map
 	notesCount:=0
 	genshinNotesCount:=0
 	For Key, Array in Notes.Timeline
@@ -412,7 +412,7 @@ genshin_output:=""
 genshin_delay:=0
 
 arpeggio_start:=0	;琶音起始
-; TODO: 拍子计算直接修改为最后一个音符的结束时间/beatTime
+; NOTE: 由于存在变速的情况，无法简单的计算整首曲子的拍子数，此处处理了琶音产生的拍子计数错误
 ; TODO: 增加设定琶音延时的语法
 arpeggio_delay_set:=40	;琶音递增延时
 arpeggio_delay:=0	;琶音累计延时
@@ -550,11 +550,13 @@ note_parser(tune)
 	} else if(multiplet=1) {
 		multiplet_cache.Push({"note":noteTune,"time":noteTime})
 	} else {
+		is_arpeggio := false
 		If(tune.Value("arpeggio")!="")	;解析琶音标记
 		{
 			if(noteTime<=arpeggio_delay+20) {
 				Return
 			}
+			is_arpeggio := true
 			Notes.Delay(-last_noteTime)
 			Notes.Delay(arpeggio_delay_set)
 			genshin_delay+=arpeggio_delay_set-last_noteTime
@@ -569,12 +571,12 @@ note_parser(tune)
 			output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
 			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
 			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
-			genshin_delay += noteTime
-			total_beats += this_note_beats
 		} else {
 			Notes.Delay(noteTime)
 			output.="Notes.Delay(" noteTime ")`n"
-			genshin_delay += noteTime
+		}
+		genshin_delay += noteTime
+		if(!is_arpeggio) {
 			total_beats += this_note_beats
 		}
 	}
