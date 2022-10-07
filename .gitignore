@@ -19,6 +19,5 @@ $RECYCLE.BIN/
 .vscode
 
 dist/
-*.exe
 *.ini
 *.log

@@ -1,7 +1,3 @@
-; # dependency:
-; # autohotkey in PATH
-; # ahk2exe in PATH
-; # mpress in ahk2exe path
 
 #SingleInstance, Force
 SetWorkingDir, %A_ScriptDir%
@@ -30,19 +26,19 @@ if InStr(FileExist("dist"), "D")
 
 FileCreateDir, dist
 
-RunWait, ahk2exe.exe /in updater.ahk /out updater.exe /compress 1
+RunWait, ahk_compiler/ahk2exe.exe /in updater.ahk /out updater.exe /compress 1 /base "ahk_compiler/AutoHotkeyU64.exe"
 If (ErrorLevel)
 {
 	MsgBox, % "updater.ahk`nERROR CODE=" ErrorLevel
 	ExitApp
 }
-RunWait, ahk2exe.exe /in %ahkFilename% /out %binaryFilename% /compress 1
+RunWait, ahk_compiler/ahk2exe.exe /in %ahkFilename% /out %binaryFilename% /compress 1 /base "ahk_compiler/AutoHotkeyU64.exe"
 If (ErrorLevel)
 {
 	MsgBox, % ahkFilename "`nERROR CODE=" ErrorLevel
 	ExitApp
 }
-RunWait, autohotkey.exe .\%ahkFilename% --out=version
+RunWait, ahk_compiler/AutoHotkeyU64.exe .\%ahkFilename% --out=version
 If (ErrorLevel)
 {
 	MsgBox, % "get version`nERROR CODE=" ErrorLevel
