@@ -604,16 +604,20 @@ extra_length_parser(basetime, src)
 {
 	global beatTime
 	s := 1
-	p := RegExMatch(src, "iO)(\/|\-|\.+)", obj, s)
+	p := RegExMatch(src, "iO)(\/+|\-+|\.+)", obj, s)
+	lastBase := beatTime
 	while(p)
 	{
-		if(obj.Value(1)="/")
+		if(InStr(obj.Value(1), "/"))
 		{
-			basetime /= 2
-		} else if(obj.Value(1)="-") {
-			basetime += beatTime
+			_t := lastBase / 2**obj.Len(1)
+			basetime := basetime - lastBase + _t
+			lastBase := _t
+		} else if(InStr(obj.Value(1), "-")) {
+			basetime += beatTime*obj.Len(1)
+			lastBase := beatTime
 		} else {
-			db:=basetime
+			db:=lastBase
 			Loop, % obj.Len(1)
 			{
 				db *= 0.5
@@ -621,7 +625,7 @@ extra_length_parser(basetime, src)
 			}
 		}
 		s += obj.Len(1)
-		p := RegExMatch(src, "iO)(\/|\-|\.+)", obj, s)
+		p := RegExMatch(src, "iO)(\/+|\-+|\.+)", obj, s)
 	}
 	return basetime
 }
