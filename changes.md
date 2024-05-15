@@ -4,6 +4,15 @@ Domiso原神特别版
 
 Domiso for Genshin
 
+## v0.99.8
+
+- 添加了长按支持，现在按键时间与音符长度一致
+- Added support for long presses, now key press times match note lengths
+- 更新了升级镜像
+- Updated upgrade mirror
+- 更新了编译工具链，减少了一半的发布体积
+- Updated compile toolchain to reduce release size by half
+
 ## v0.99.7b
 
 - 增加乐器选择菜单宽度
