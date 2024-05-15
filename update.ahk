@@ -15,9 +15,7 @@ IniRead, version_str, setting.ini, update, ver, 0
 IniRead, inst, setting.ini, update, inst, 11
 log_write("Start at " A_YYYY "-" A_MM "-" A_DD, 0)
 mirrorList:=["https://github.com"
-,"https://ghproxy.com/https://github.com"
-,"https://download.fastgit.org"
-,"https://github.com.cnpmjs.org"]
+,"https://ghproxy.com/https://github.com"]
 updatemirrorTried:=Array()
 today:=A_MM . A_DD
 if(betaBuild!=1) {
