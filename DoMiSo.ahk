@@ -127,15 +127,15 @@ genshin_array_sort(ByRef array)
 	array_string:=""
 	For index, v in array
 	{
-		array_string .= v.delay "," v.note "`n"
+		array_string .= v.delay "," v.note "," v.time "`n"
 	}
 	Sort, array_string, N
 	array:={}
 	Loop, Parse, array_string, `n
 	{
-		if(RegExMatch(A_LoopField, "O)(\d+),(\w)", note))
+		if(RegExMatch(A_LoopField, "O)(\d+),(\w),(\d+)", note))
 		{
-			array.Push({"delay":note[1], "note":note[2]})
+			array.Push({"delay":note[1], "note":note[2], "time":note[3]})
 		}
 	}
 }
@@ -164,7 +164,7 @@ genshin_main:
 if(!global_mode) {
 	genshin_win_hwnd:=genshin_window_exist()
 }
-if(genshin_play_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
+if(genshin_released_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
 {
 	isBtn1Playing:=0
 	btn1update()
@@ -173,25 +173,46 @@ if(genshin_play_p > genshin_play_array.Length() or (!global_mode && !genshin_win
 }
 DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 ; genshin_window_active(genshin_window_exist())
-While(nowTime//(freq/1000)-startTime >= genshin_play_array[genshin_play_p].delay)
+deltaMS:=nowTime//(freq/1000)-startTime
+While(genshin_released_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_released_p].delay+genshin_play_array[genshin_released_p].time)
 {
-	if not genshin_play_array[genshin_play_p].note
+	if not genshin_play_array[genshin_released_p].note
 	{
-		Return
+		genshin_released_p += 1
+		Break
 	}
 	if(global_mode) {
 		if WinActive("ahk_id " domiso_active_hwnd)
 		{
-			Send, % genshin_play_array[genshin_play_p].note
+			Send, % "{" genshin_play_array[genshin_released_p].note " up}"
 		}
 	} else {
 		if WinActive("ahk_id " genshin_win_hwnd)
 		{
-			Send, % genshin_play_array[genshin_play_p].note
+			Send, % "{" genshin_play_array[genshin_released_p].note " up}"
 		}
 	}
-	; ControlSend, ,% genshin_play_array[genshin_play_p].note, ahk_exe GenshinImpact.exe
-	genshin_play_p += 1
+	genshin_released_p += 1
+}
+While(genshin_pressed_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_pressed_p].delay)
+{
+	if not genshin_play_array[genshin_pressed_p].note
+	{
+		genshin_pressed_p += 1
+		Break
+	}
+	if(global_mode) {
+		if WinActive("ahk_id " domiso_active_hwnd)
+		{
+			Send, % "{" genshin_play_array[genshin_pressed_p].note " down}"
+		}
+	} else {
+		if WinActive("ahk_id " genshin_win_hwnd)
+		{
+			Send, % "{" genshin_play_array[genshin_pressed_p].note " down}"
+		}
+	}
+	genshin_pressed_p += 1
 }
 Return
 
@@ -237,8 +258,9 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 
 genshin_play()
 {
-	global startTime, freq, genshin_play_p, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
-	genshin_play_p := 1
+	global startTime, freq, genshin_pressed_p, genshin_released_p, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
+	genshin_pressed_p := 1
+	genshin_released_p := 1
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 	domiso_active_hwnd:=0
 	if(global_mode) {
@@ -569,8 +591,8 @@ note_parser(tune)
 		if(noteTune>0) {
 			Notes.Note(noteTune,noteTime,50).Delay(noteTime)
 			output.="Notes.Note(" noteTune "," noteTime ",50).Delay(" noteTime ")`n"
-			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")`n"
-			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[noteTune]})
+			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[noteTune] ")-{" Round(noteTime) "}`n"
+			genshin_play_array.Push({"delay":Round(genshin_delay),"time":Round(noteTime),"note":genshin_note_map[noteTune]})
 		} else {
 			Notes.Delay(noteTime)
 			output.="Notes.Delay(" noteTime ")`n"
@@ -646,7 +668,7 @@ bracket_end_parser(mark)
 			; chord_cache[A_Index].time
 			output.="Notes.Note(" chord_cache[A_Index].note "," chordTime ",50)`n"
 			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[chord_cache[A_Index].note] ")`n"
-			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[chord_cache[A_Index].note]})
+			genshin_play_array.Push({"delay":Round(genshin_delay),"time":Round(chordTime),"note":genshin_note_map[chord_cache[A_Index].note]})
 		}
 		Notes.Delay(chordTime)
 		chord:=0
@@ -677,7 +699,7 @@ bracket_end_parser(mark)
 			Notes.Delay(mk*multiplet_cache[A_Index].time)
 			output.="Notes.Note(" multiplet_cache[A_Index].note "," mk*multiplet_cache[A_Index].time ",50)`n"
 			genshin_output.="[" Round(genshin_delay) "]-(" genshin_note_map[multiplet_cache[A_Index].note] ")`n"
-			genshin_play_array.Push({"delay":Round(genshin_delay),"note":genshin_note_map[multiplet_cache[A_Index].note]})
+			genshin_play_array.Push({"delay":Round(genshin_delay),"time":Round(mk*multiplet_cache[A_Index].time),"note":genshin_note_map[multiplet_cache[A_Index].note]})
 			genshin_delay+=mk*multiplet_cache[A_Index].time
 		}
 		total_beats += mtime/beatTime
