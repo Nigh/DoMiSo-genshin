@@ -6,6 +6,10 @@ IfExist, updater.exe
 {
 	FileDelete, updater.exe
 }
+IfExist, ___delete_me___.exe
+{
+	FileDelete, ___delete_me___.exe
+}
 IniRead, logLevel, setting.ini, update, log, 0
 IniRead, lastUpdate, setting.ini, update, last, 0
 IniRead, autoUpdate, setting.ini, update, autoupdate, 1
@@ -15,9 +19,7 @@ IniRead, version_str, setting.ini, update, ver, 0
 IniRead, inst, setting.ini, update, inst, 11
 log_write("Start at " A_YYYY "-" A_MM "-" A_DD, 0)
 mirrorList:=["https://github.com"
-,"https://ghproxy.com/https://github.com"
-,"https://download.fastgit.org"
-,"https://github.com.cnpmjs.org"]
+,"https://ghproxy.com/https://github.com"]
 updatemirrorTried:=Array()
 today:=A_MM . A_DD
 if(betaBuild!=1) {
@@ -84,7 +86,7 @@ tryNextUpdate()
 
 ; with MSXML2.ServerXMLHTTP method, there would be multiple callback called
 updateReady(){
-	global req, version, updateReqDone, updateSite, downloadUrl, downloadFilename
+	global req, version, updateReqDone, updateSite, downloadUrl, downloadFilename, binaryFilename
 	log_write("update req.readyState=" req.readyState, 1)
     if (req.readyState != 4){  ; Not done yet.
         return
@@ -107,11 +109,15 @@ updateReady(){
 			IfMsgBox Yes
 			{
 				try {
+					IfExist, %downloadFilename%
+					{
+						FileDelete, %downloadFilename%
+					}
 					UrlDownloadToFile, % updateSite downloadUrl downloadFilename, % "./" downloadFilename
 					MsgBox, ,, % "Download finished`n更新下载完成`n`nProgram will restart now`n软件即将重启", 3
 					IniWrite, % A_MM A_DD, setting.ini, update, last
 					FileInstall, updater.exe, updater.exe, 1
-					Run, updater.exe
+					Run, updater.exe ___ORIGIN_ME___ %downloadFilename% %binaryFilename%, A_ScriptDir, Hide
 					ExitApp
 				} catch e {
 					MsgBox, 16,, % "Upgrade failed`nAn exception was thrown!`nSpecifically: " e

@@ -26,10 +26,10 @@ if InStr(FileExist("dist"), "D")
 
 FileCreateDir, dist
 
-RunWait, ahk_compiler/ahk2exe.exe /in updater.ahk /out updater.exe /compress 1 /base "ahk_compiler/AutoHotkeyU64.exe"
+RunWait, ahk_compiler/tcc/tcc.exe ./updater.c -luser32
 If (ErrorLevel)
 {
-	MsgBox, % "updater.ahk`nERROR CODE=" ErrorLevel
+	MsgBox, % "updater.c`nERROR CODE=" ErrorLevel
 	ExitApp
 }
 RunWait, ahk_compiler/ahk2exe.exe /in %ahkFilename% /out %binaryFilename% /compress 1 /base "ahk_compiler/AutoHotkeyU64.exe"
