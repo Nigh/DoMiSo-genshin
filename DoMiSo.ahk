@@ -40,10 +40,10 @@ if(!nonAdmin){
 	UAC()
 }
 ;@Ahk2Exe-IgnoreBegin
-	MsgBox, 0x41030,ATTENTION,You are running DEBUG version!!!`注意，正在运行的是测试版本。
+	MsgBox, 0x41030,ATTENTION,You are running DEBUG version!!!`n注意，正在运行的是测试版本。
 ;@Ahk2Exe-IgnoreEnd
 if(betaBuild=1) {
-	MsgBox, 0x41030,ATTENTION,You are running BETA version!!!`注意，正在运行的是内测版本。
+	MsgBox, 0x41030,ATTENTION,You are running BETA version`, the BETA version does not support automatic updates!!!`n注意，正在运行的是内测版本。内测版本不支持自动更新。
 }
 
 OnExit, TrueExit
