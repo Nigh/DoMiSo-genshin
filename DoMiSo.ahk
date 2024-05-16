@@ -184,9 +184,7 @@ if(!global_mode) {
 }
 if(genshin_released_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
 {
-	isBtn1Playing:=0
-	btn1update()
-	SetTimer, genshin_main, Off
+	genshin_stop()
 	Return
 }
 DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
@@ -307,6 +305,10 @@ genshin_stop()
 	isBtn1Playing:=0
 	btn1update()
 	SetTimer, genshin_main, Off
+	For k, v in genshin_note_map
+	{
+		Send, % "{" v " up}"
+	}
 }
 
 genshin_window_exist()
