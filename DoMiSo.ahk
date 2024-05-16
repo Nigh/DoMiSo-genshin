@@ -6,7 +6,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
-SetKeyDelay, -1, -1 
+SetKeyDelay, -1, -1
 SendMode event 
 FileEncoding, UTF-8
 
@@ -160,6 +160,24 @@ analyseNotes(Notes)
 	statubar_txt(Round(Notes.total_beats,2) " beats | " genshinNotesCount "/" notesCount " Notes | " Round(100*genshinNotesCount/notesCount, 2) "% fits game")
 }
 
+note_play(elem, r=0)
+{
+	if elem.time >= 321
+	{
+		if r!=0
+		{
+			Send, % "{" elem.note " up}"
+		} else {
+			Send, % "{" elem.note " down}"
+		}
+	} else {
+		if r=0
+		{
+			Send, % "{" elem.note "}"
+		}
+	}
+}
+
 genshin_main:
 if(!global_mode) {
 	genshin_win_hwnd:=genshin_window_exist()
@@ -174,7 +192,7 @@ if(genshin_released_p > genshin_play_array.Length() or (!global_mode && !genshin
 DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 ; genshin_window_active(genshin_window_exist())
 deltaMS:=nowTime//(freq/1000)-startTime
-While(genshin_released_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_released_p].delay+genshin_play_array[genshin_released_p].time)
+While(genshin_released_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_released_p].delay+genshin_play_array[genshin_released_p].time - 50)
 {
 	if not genshin_play_array[genshin_released_p].note
 	{
@@ -184,12 +202,12 @@ While(genshin_released_p <= genshin_play_array.Length() and deltaMS >= genshin_p
 	if(global_mode) {
 		if WinActive("ahk_id " domiso_active_hwnd)
 		{
-			Send, % "{" genshin_play_array[genshin_released_p].note " up}"
+			note_play(genshin_play_array[genshin_released_p], 1)
 		}
 	} else {
 		if WinActive("ahk_id " genshin_win_hwnd)
 		{
-			Send, % "{" genshin_play_array[genshin_released_p].note " up}"
+			note_play(genshin_play_array[genshin_released_p], 1)
 		}
 	}
 	genshin_released_p += 1
@@ -204,12 +222,12 @@ While(genshin_pressed_p <= genshin_play_array.Length() and deltaMS >= genshin_pl
 	if(global_mode) {
 		if WinActive("ahk_id " domiso_active_hwnd)
 		{
-			Send, % "{" genshin_play_array[genshin_pressed_p].note " down}"
+			note_play(genshin_play_array[genshin_released_p])
 		}
 	} else {
 		if WinActive("ahk_id " genshin_win_hwnd)
 		{
-			Send, % "{" genshin_play_array[genshin_pressed_p].note " down}"
+			note_play(genshin_play_array[genshin_released_p])
 		}
 	}
 	genshin_pressed_p += 1
@@ -280,7 +298,6 @@ genshin_play()
 	isBtn1Playing:=1
 	btn1update()
 	startTime:=nowTime//(freq/1000) + 500
-
 	SetTimer, genshin_main, 5 
 }
 
