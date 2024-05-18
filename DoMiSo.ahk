@@ -162,19 +162,24 @@ analyseNotes(Notes)
 
 note_play(elem, r=0)
 {
+	send_key:=""
 	if elem.time >= 321
 	{
 		if r!=0
 		{
-			Send, % "{" elem.note " up}"
+			send_key:="{" elem.note " up}"
 		} else {
-			Send, % "{" elem.note " down}"
+			send_key:="{" elem.note " down}"
 		}
 	} else {
 		if r=0
 		{
-			Send, % "{" elem.note "}"
+			send_key:="{" elem.note "}"
 		}
+	}
+	if send_key!=""
+	{
+		Send, % send_key
 	}
 }
 
@@ -220,12 +225,12 @@ While(genshin_pressed_p <= genshin_play_array.Length() and deltaMS >= genshin_pl
 	if(global_mode) {
 		if WinActive("ahk_id " domiso_active_hwnd)
 		{
-			note_play(genshin_play_array[genshin_released_p])
+			note_play(genshin_play_array[genshin_pressed_p])
 		}
 	} else {
 		if WinActive("ahk_id " genshin_win_hwnd)
 		{
-			note_play(genshin_play_array[genshin_released_p])
+			note_play(genshin_play_array[genshin_pressed_p])
 		}
 	}
 	genshin_pressed_p += 1
