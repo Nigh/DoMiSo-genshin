@@ -15,7 +15,7 @@ https://github.com/Nigh/DoMiSo-genshin
   - https://www.bilibili.com/video/BV1Sr4y1Q7AZ/
   - https://www.bilibili.com/video/BV1564y1Q7Uq/
 
-## Download(下载)
+## 下载
 
 - [GitHub下载](https://github.com/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
 - [镜像下载](https://mirror.ghproxy.com/https://github.com/Nigh/DoMiSo-genshin/releases/latest/download/DomisoGenshin.zip)
