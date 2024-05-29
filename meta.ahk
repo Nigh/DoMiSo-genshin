@@ -2,11 +2,11 @@
 FileEncoding, UTF-8
 
 ; 是否内测版本
-betaBuild:=0
+betaBuild:=1
 
 name_en:="Domiso Automata"
 name_zh:="原神自动弹琴人偶"
-version:="0.99.8"
+version:="0.99.9C"
 versionFilename:="version.txt"
 ahkFilename:="DoMiSo.ahk"
 binaryFilename:="Domiso-Genshin.exe"

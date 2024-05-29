@@ -163,43 +163,46 @@ analyseNotes(Notes)
 
 note_release(elem)
 {
-	global keyHistory, deltaMS, gDebug
-	send_key:=[]
-	if(GetKeyState(elem.note)) {
-		send_key.Push("{" elem.note " up}")
-	}
-	Loop % send_key.Length()
+	global sendHistory, deltaMS, genshin_pressed_array, gDebug
+	note := elem.note
+	newArray := Array()
+	Loop, % genshin_pressed_array.Length()
 	{
-		if(gDebug) {
-			keyHistory.=Round(deltaMS) "ms " send_key[A_Index] "`n"
+		if genshin_pressed_array[A_Index].note != note {
+			newArray.Push(genshin_pressed_array[A_Index])
 		}
-		Send, % send_key[A_Index]
+	}
+	if genshin_pressed_array.Length() != newArray.Length() {
+		send_key := "{" note " up}"
+		genshin_pressed_array := newArray
+		if(gDebug) {
+			sendHistory.=Round(deltaMS) "ms " send_key "`n"
+		}
+		Send, % send_key
 	}
 }
 note_play(elem)
 {
-	global keyHistory, deltaMS, gDebug
-	send_key:=[]
+	global sendHistory, deltaMS, genshin_pressed_array, gDebug
+	send_key:=""
 	if elem.time >= 261
 	{
-		send_key.Push("{" elem.note " down}")
+		send_key:="{" elem.note " down}"
+		genshin_pressed_array.Push(elem)
 	} else {
-		send_key.Push("{" elem.note "}")
+		send_key:="{" elem.note "}"
 	}
-	Loop % send_key.Length()
-	{
-		if(gDebug) {
-			keyHistory.=Round(deltaMS) "ms " send_key[A_Index] "`n"
-		}
-		Send, % send_key[A_Index]
+	if(gDebug) {
+		sendHistory.=Round(deltaMS) "ms " send_key " " elem.time "ms`n"
 	}
+	Send, % send_key
 }
 
 genshin_main:
 if(!global_mode) {
 	genshin_win_hwnd:=genshin_window_exist()
 }
-if(genshin_released_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
+if(genshin_pressed_p > genshin_play_array.Length() and genshin_pressed_array.Length() == 0 or (!global_mode && !genshin_win_hwnd))
 {
 	genshin_stop()
 	Return
@@ -207,28 +210,26 @@ if(genshin_released_p > genshin_play_array.Length() or (!global_mode && !genshin
 DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 ; genshin_window_active(genshin_window_exist())
 deltaMS:=nowTime//(freq/1000)-startTime
-While(genshin_released_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_released_p].delay+genshin_play_array[genshin_released_p].time - 80)
+Loop, % genshin_pressed_array.Length()
 {
-	if not genshin_play_array[genshin_released_p].note
-	{
-		genshin_released_p += 1
-		Break
-	}
-	if(global_mode) {
-		if WinActive("ahk_id " domiso_active_hwnd)
-		{
-			note_release(genshin_play_array[genshin_released_p])
-		}
-	} else {
-		if WinActive("ahk_id " genshin_win_hwnd)
-		{
-			note_release(genshin_play_array[genshin_released_p])
+	elem := genshin_pressed_array[A_Index]
+	if(deltaMS >= elem.delay+elem.time - 80) {
+		if(global_mode) {
+			if WinActive("ahk_id " domiso_active_hwnd)
+			{
+				note_release(elem)
+			}
+		} else {
+			if WinActive("ahk_id " genshin_win_hwnd)
+			{
+				note_release(elem)
+			}
 		}
 	}
-	genshin_released_p += 1
 }
+
 genshin_prepare_p:=genshin_pressed_p
-While(genshin_prepare_p <= genshin_play_array.Length() and deltaMS + 60 >= genshin_play_array[genshin_prepare_p].delay)
+While(genshin_prepare_p <= genshin_play_array.Length() and deltaMS + 40 >= genshin_play_array[genshin_prepare_p].delay)
 {
 	note_release(genshin_play_array[genshin_prepare_p])
 	genshin_prepare_p += 1
@@ -297,9 +298,9 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 
 genshin_play()
 {
-	global keyHistory, startTime, freq, genshin_pressed_p, genshin_released_p, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
+	global sendHistory, gDebug, startTime, freq, genshin_pressed_p, genshin_pressed_array, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
 	genshin_pressed_p := 1
-	genshin_released_p := 1
+	genshin_pressed_array := Array()
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 	domiso_active_hwnd:=0
 	if(global_mode) {
@@ -320,7 +321,7 @@ genshin_play()
 	btn1update()
 	startTime:=nowTime//(freq/1000) + 500
 	if(gDebug) {
-		keyHistory:=""
+		sendHistory:=""
 	}
 	SetTimer, genshin_main, 1
 }
@@ -332,7 +333,7 @@ genshin_stop()
 	btn1update()
 	SetTimer, genshin_main, Off
 	if(gDebug) {
-		Clipboard:=keyHistory
+		Clipboard:=sendHistory
 	}
 	For k, v in genshin_note_map
 	{
