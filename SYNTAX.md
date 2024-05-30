@@ -72,11 +72,44 @@ For example, `5..` has a note time of `1+0.5+0.25` beats.
 `-1#-/-` has a note time of `1+0.5+1` beats.
 
 `( 1 3- 5 )` has a note time of `2` beats. This is a chord. The use of the chord is described below.
+### Chords ###
 
-### Chord ###
-Notes enclosed in brackets will be treated as chords. In this case, the brackets need to be separated from the notes by a space. Otherwise they will be ignored as invalid notes.
+Notes enclosed in parentheses are considered chords. There must be a space between the parentheses and the notes; otherwise, they will be treated as invalid notes and ignored.
 
-Each note in the chord will be played at the same time and the length of the whole chord is determined by the longest note in the chord.
+Each note in the chord will be played simultaneously, and the base duration of the chord is determined by the longest note within the chord.
+
+Starting from version `v0.99.9`, chords can also support duration markers, for example:
+- `( 1 3/ 5 )/` represents a chord with a duration of `0.5` beats
+- `( 1 3 5 )--` represents a chord with a duration of `3` beats
+- `( 1 3 5 )..` represents a chord with a duration of `1.75` beats
+
+The duration marker of a chord affects the base duration of the chord. For example:
+- `( 1/ 3// 5/ )` is a chord with a base duration of `0.5` beats, so `( 1/ 3// 5/ )/` has a duration of `0.25` beats
+
+### Tuplets ###
+
+Similar to chords, notes enclosed in curly braces `{}` represent tuplets. The notes within the curly braces will automatically be divided equally into the assigned duration, with the total duration of the notes within the curly braces being `1` beat. For example:
+- `{ 1 3 5 }` represents a triplet with a total duration of `1` beat
+- `{ 1 3 5 6 +3 }` represents a quintuplet with a total duration of `1` beat
+
+The length of each note within the curly braces only affects its allocated duration. For example:
+- `{ 1 3 5 +1 }` = `1// 3// 5// +1//` = `{ 1/ 3/ 5/ +1/ }`
+- `{ 1 3/ 5 +1/ +5 }` = `1// 3/// 5// +1/// +5//` = `{ 1/ 3// 5/ +1// +5/ }`
+
+Just like chords, tuplets enclosed in curly braces also support duration markers. For example:
+- `{ 1 3 5 +1 }/` = `1/// 3/// 5/// +1///`
+
+### Arpeggios ###
+`1-- ~3-- ~5-- ~6-- ~7-- ~+5-- ~+7--`
+
+As shown in the example above, you can write arpeggios using a tilde `~`.
+
+Adding `~` before a note indicates that this note will be played slightly delayed relative to the previous note, but its end time will remain the same as if it were not delayed.
+
+For example, in the example above, all notes will end simultaneously on the `3` beat.
+
+> [!NOTE]  
+> Since the arpeggio marker is an offset relative to the previous note, it cannot be used on the first note.
 
 ## RollBack
 This is a RollBack usage example to demonstrate the basic usage of the RollBack command.
