@@ -38,7 +38,7 @@ v0.99 Publish: https://youtu.be/11E3XElFfIg
 
 
 Discord(EN): https://discord.gg/5PCebykNaC
-官方社群(CN): https://kaihei.co/IWXRLp
+官方社群(CN): https://kook.top/VXCE5O
 
 更多谱面尽在官方社群哦
 
