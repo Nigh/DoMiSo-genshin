@@ -6,8 +6,8 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance force
 SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
-SetKeyDelay, -1, -1 
-SendMode event 
+SetKeyDelay, -1, -1
+SendMode Event
 FileEncoding, UTF-8
 
 #include meta.ahk
@@ -40,10 +40,11 @@ if(!nonAdmin){
 	UAC()
 }
 ;@Ahk2Exe-IgnoreBegin
-	MsgBox, 0x41030,ATTENTION,You are running DEBUG version!!!`注意，正在运行的是测试版本。
+	gDebug:=1
+	MsgBox, 0x41030,ATTENTION,You are running DEBUG version!!!`n注意，正在运行的是测试版本。
 ;@Ahk2Exe-IgnoreEnd
 if(betaBuild=1) {
-	MsgBox, 0x41030,ATTENTION,You are running BETA version!!!`注意，正在运行的是内测版本。
+	MsgBox, 0x41030,ATTENTION,You are running BETA version`, the BETA version does not support automatic updates!!!`n注意，正在运行的是内测版本。内测版本不支持自动更新。
 }
 
 OnExit, TrueExit
@@ -160,39 +161,78 @@ analyseNotes(Notes)
 	statubar_txt(Round(Notes.total_beats,2) " beats | " genshinNotesCount "/" notesCount " Notes | " Round(100*genshinNotesCount/notesCount, 2) "% fits game")
 }
 
+note_release(elem)
+{
+	global sendHistory, deltaMS, genshin_pressed_array, gDebug
+	note := elem.note
+	newArray := Array()
+	Loop, % genshin_pressed_array.Length()
+	{
+		if genshin_pressed_array[A_Index].note != note {
+			newArray.Push(genshin_pressed_array[A_Index])
+		}
+	}
+	if genshin_pressed_array.Length() != newArray.Length() {
+		send_key := "{" note " up}"
+		genshin_pressed_array := newArray
+		if(gDebug) {
+			sendHistory.=Round(deltaMS) "ms " send_key "`n"
+		}
+		Send, % send_key
+	}
+}
+note_play(elem)
+{
+	global sendHistory, deltaMS, genshin_pressed_array, gDebug
+	send_key:=""
+	if elem.time >= 261
+	{
+		send_key:="{" elem.note " down}"
+		genshin_pressed_array.Push(elem)
+	} else {
+		send_key:="{" elem.note "}"
+	}
+	if(gDebug) {
+		sendHistory.=Round(deltaMS) "ms " send_key " " elem.time "ms`n"
+	}
+	Send, % send_key
+}
+
 genshin_main:
 if(!global_mode) {
 	genshin_win_hwnd:=genshin_window_exist()
 }
-if(genshin_released_p > genshin_play_array.Length() or (!global_mode && !genshin_win_hwnd))
+if(genshin_pressed_p > genshin_play_array.Length() and genshin_pressed_array.Length() == 0 or (!global_mode && !genshin_win_hwnd))
 {
-	isBtn1Playing:=0
-	btn1update()
-	SetTimer, genshin_main, Off
+	genshin_stop()
 	Return
 }
 DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 ; genshin_window_active(genshin_window_exist())
 deltaMS:=nowTime//(freq/1000)-startTime
-While(genshin_released_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_released_p].delay+genshin_play_array[genshin_released_p].time)
+Loop, % genshin_pressed_array.Length()
 {
-	if not genshin_play_array[genshin_released_p].note
-	{
-		genshin_released_p += 1
-		Break
-	}
-	if(global_mode) {
-		if WinActive("ahk_id " domiso_active_hwnd)
-		{
-			Send, % "{" genshin_play_array[genshin_released_p].note " up}"
-		}
-	} else {
-		if WinActive("ahk_id " genshin_win_hwnd)
-		{
-			Send, % "{" genshin_play_array[genshin_released_p].note " up}"
+	elem := genshin_pressed_array[A_Index]
+	if(deltaMS >= elem.delay+elem.time - 80) {
+		if(global_mode) {
+			if WinActive("ahk_id " domiso_active_hwnd)
+			{
+				note_release(elem)
+			}
+		} else {
+			if WinActive("ahk_id " genshin_win_hwnd)
+			{
+				note_release(elem)
+			}
 		}
 	}
-	genshin_released_p += 1
+}
+
+genshin_prepare_p:=genshin_pressed_p
+While(genshin_prepare_p <= genshin_play_array.Length() and deltaMS + 40 >= genshin_play_array[genshin_prepare_p].delay)
+{
+	note_release(genshin_play_array[genshin_prepare_p])
+	genshin_prepare_p += 1
 }
 While(genshin_pressed_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_pressed_p].delay)
 {
@@ -204,12 +244,12 @@ While(genshin_pressed_p <= genshin_play_array.Length() and deltaMS >= genshin_pl
 	if(global_mode) {
 		if WinActive("ahk_id " domiso_active_hwnd)
 		{
-			Send, % "{" genshin_play_array[genshin_pressed_p].note " down}"
+			note_play(genshin_play_array[genshin_pressed_p])
 		}
 	} else {
 		if WinActive("ahk_id " genshin_win_hwnd)
 		{
-			Send, % "{" genshin_play_array[genshin_pressed_p].note " down}"
+			note_play(genshin_play_array[genshin_pressed_p])
 		}
 	}
 	genshin_pressed_p += 1
@@ -258,9 +298,9 @@ GuiDropFiles(GuiHwnd, FileArray, CtrlHwnd, X, Y) {
 
 genshin_play()
 {
-	global startTime, freq, genshin_pressed_p, genshin_released_p, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
+	global sendHistory, gDebug, startTime, freq, genshin_pressed_p, genshin_pressed_array, isBtn1Playing, global_mode, domiso_active_hwnd, gui_id
 	genshin_pressed_p := 1
-	genshin_released_p := 1
+	genshin_pressed_array := Array()
 	DllCall("QueryPerformanceCounter", "Int64P",  nowTime)
 	domiso_active_hwnd:=0
 	if(global_mode) {
@@ -280,8 +320,10 @@ genshin_play()
 	isBtn1Playing:=1
 	btn1update()
 	startTime:=nowTime//(freq/1000) + 500
-
-	SetTimer, genshin_main, 5 
+	if(gDebug) {
+		sendHistory:=""
+	}
+	SetTimer, genshin_main, 1
 }
 
 genshin_stop()
@@ -290,6 +332,13 @@ genshin_stop()
 	isBtn1Playing:=0
 	btn1update()
 	SetTimer, genshin_main, Off
+	if(gDebug) {
+		Clipboard:=sendHistory
+	}
+	For k, v in genshin_note_map
+	{
+		Send, % "{" v " up}"
+	}
 }
 
 genshin_window_exist()

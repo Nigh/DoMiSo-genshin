@@ -4,6 +4,11 @@ Domiso原神特别版
 
 Domiso for Genshin
 
+## v0.99.9
+
+- 修复了长按逻辑相关的问题
+- Fixed issues related to long press logic
+
 ## v0.99.8
 
 - 添加了长按支持，现在按键时间与音符长度一致
