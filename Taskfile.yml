@@ -1,0 +1,44 @@
+version: '3'
+
+vars:
+  APP_NAME: "domiso-universal"
+  BIN_DIR: "bin"
+  PACKAGE_MANAGER: '{{.PACKAGE_MANAGER | default "npm"}}'
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+  build:signal:
+    summary: Build the signal piano roll (must run before frontend build)
+    dir: signal
+    cmds:
+      - npm install
+      - npm run build -w packages/player
+      - npm run build -w packages/dialog-hooks
+      - npm run build -w app
+      - pwsh -Command "Copy-Item -Path 'app/dist/*' -Destination '../frontend/public/signal' -Recurse -Force"
