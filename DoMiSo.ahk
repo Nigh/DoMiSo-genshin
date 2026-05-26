@@ -123,20 +123,20 @@ titleMove:
 PostMessage 0xA1, 2
 Return
 
-genshin_array_sort(ByRef array)
+genshin_array_sort(ByRef arr)
 {
 	array_string:=""
-	For index, v in array
+	For index, v in arr
 	{
 		array_string .= v.delay "," v.note "," v.time "`n"
 	}
 	Sort, array_string, N
-	array:={}
+	arr:=Array()
 	Loop, Parse, array_string, `n
 	{
-		if(RegExMatch(A_LoopField, "O)(\d+),(\w),(\d+)", note))
+		if(RegExMatch(A_LoopField, "O)(\d+),(.),(\d+)", note))
 		{
-			array.Push({"delay":note[1], "note":note[2], "time":note[3]})
+			arr.Push({"delay":note[1], "note":note[2], "time":note[3]})
 		}
 	}
 }
@@ -185,7 +185,7 @@ note_play(elem)
 {
 	global sendHistory, deltaMS, genshin_pressed_array, gDebug
 	send_key:=""
-	if elem.time >= 261
+	if elem.time >= 80
 	{
 		send_key:="{" elem.note " down}"
 		genshin_pressed_array.Push(elem)
@@ -236,7 +236,7 @@ While(genshin_prepare_p <= genshin_play_array.Length() and deltaMS + 40 >= gensh
 }
 While(genshin_pressed_p <= genshin_play_array.Length() and deltaMS >= genshin_play_array[genshin_pressed_p].delay)
 {
-	if not genshin_play_array[genshin_pressed_p].note
+	if StrLen(genshin_play_array[genshin_pressed_p].note)!=1
 	{
 		genshin_pressed_p += 1
 		Break
