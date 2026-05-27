@@ -54,13 +54,6 @@ task dev
 
 See [SYNTAX.md](SYNTAX.md) for the complete notation reference.
 
-Quick example:
-```
-1=C 4/4 120
-1 2 3 4 | 5 6 7 1̇
-[135] [246] [357] [461̇]
-```
-
 ## Sample Sheets
 
 8 sample sheets are embedded in the binary, including:
