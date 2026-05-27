@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { SheetEditor } from "./components/SheetEditor"
 import { SheetSelector } from "./components/SheetSelector"
-import { Toolbar } from "./components/Toolbar"
-import { createSignalBridge, type SignalBridge } from "./bridge/signal-bridge"
+import { Toolbar, type AppMode } from "./components/Toolbar"
+import {
+  createSignalBridge,
+  type PlayerState,
+  type SignalBridge,
+} from "./bridge/signal-bridge"
 import { AppService, SheetInfo } from "../bindings/domiso-universal"
 
 function base64ToUint8Array(base64: string): Uint8Array {
@@ -22,6 +26,9 @@ function App() {
   const [isSheetsLoading, setIsSheetsLoading] = useState(false)
   const [signalReady, setSignalReady] = useState(false)
   const [statusMessage, setStatusMessage] = useState("Loading signal...")
+  const [mode, setMode] = useState<AppMode>("editor")
+  const [playerState, setPlayerState] = useState<PlayerState | null>(null)
+  const [songLoaded, setSongLoaded] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const bridgeRef = useRef<SignalBridge | null>(null)
 
@@ -57,10 +64,30 @@ function App() {
     bridge.onMIDILoaded((success, error) => {
       setIsLoading(false)
       if (success) {
-        setStatusMessage("Loaded - use signal controls to play")
+        setStatusMessage("Loaded")
+        setSongLoaded(true)
       } else {
         setStatusMessage(`Error: ${error ?? "Failed to load MIDI"}`)
       }
+    })
+
+    bridge.onStateUpdate((state) => {
+      setPlayerState(state)
+    })
+
+    bridge.onSongLoaded((meta) => {
+      setSongLoaded(true)
+      setPlayerState((prev) =>
+        prev
+          ? { ...prev, endOfSong: meta.endOfSong }
+          : {
+              isPlaying: false,
+              position: 0,
+              endOfSong: meta.endOfSong,
+              tempo: 120,
+              mbtTime: "1:1:0",
+            },
+      )
     })
 
     return () => {
@@ -100,6 +127,7 @@ function App() {
       const midiBytes = base64ToUint8Array(midiBase64)
       setStatusMessage("Sending to piano roll...")
       bridgeRef.current.loadMIDI(midiBytes)
+      setMode("piano-roll")
     } catch (err) {
       console.error("Parse error:", err)
       setIsLoading(false)
@@ -107,10 +135,23 @@ function App() {
     }
   }, [sheetText])
 
+  const handlePlay = useCallback(() => {
+    bridgeRef.current?.play()
+  }, [])
+
+  const handleStop = useCallback(() => {
+    bridgeRef.current?.stop()
+  }, [])
+
+  const handleSeek = useCallback((tick: number) => {
+    bridgeRef.current?.seek(tick)
+  }, [])
+
   return (
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         height: "100vh",
         backgroundColor: "#1e1e2e",
         color: "#cdd6f4",
@@ -118,71 +159,87 @@ function App() {
           "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "400px",
-          minWidth: "300px",
-          borderRight: "1px solid #313244",
-          flexShrink: 0,
-        }}
-      >
-        <div
-          style={{
-            padding: "12px 16px",
-            borderBottom: "1px solid #313244",
-            fontWeight: 800,
-            fontSize: "16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <span style={{ color: "#89b4fa" }}>DoMiSo</span>
-          <span style={{ color: "#a6adc8", fontWeight: 400, fontSize: "12px" }}>
-            Universal
-          </span>
-        </div>
-        <div
-          style={{
-            height: "200px",
-            borderBottom: "1px solid #313244",
-            flexShrink: 0,
-            overflow: "hidden",
-          }}
-        >
-          <SheetSelector
-            sheets={sheets}
-            selectedSheet={selectedSheet}
-            onSelect={handleSelectSheet}
-            onRefresh={loadSheets}
-            isLoading={isSheetsLoading}
-          />
-        </div>
-        <div style={{ flex: 1, overflow: "hidden" }}>
-          <SheetEditor value={sheetText} onChange={setSheetText} />
-        </div>
-      </div>
+      <Toolbar
+        onImport={handleImport}
+        isLoading={isLoading}
+        signalReady={signalReady}
+        statusMessage={statusMessage}
+        mode={mode}
+        onModeChange={setMode}
+        playerState={playerState}
+        songLoaded={songLoaded}
+        onPlay={handlePlay}
+        onStop={handleStop}
+        onSeek={handleSeek}
+      />
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          overflow: "hidden",
-        }}
-      >
-        <Toolbar
-          onImport={handleImport}
-          isLoading={isLoading}
-          signalReady={signalReady}
-          statusMessage={statusMessage}
-        />
-        <div style={{ flex: 1, position: "relative" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {mode === "editor" && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "400px",
+              minWidth: "300px",
+              borderRight: "1px solid #313244",
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                padding: "12px 16px",
+                borderBottom: "1px solid #313244",
+                fontWeight: 800,
+                fontSize: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ color: "#89b4fa" }}>DoMiSo</span>
+              <span
+                style={{
+                  color: "#a6adc8",
+                  fontWeight: 400,
+                  fontSize: "12px",
+                }}
+              >
+                Universal
+              </span>
+            </div>
+            <div
+              style={{
+                height: "200px",
+                borderBottom: "1px solid #313244",
+                flexShrink: 0,
+                overflow: "hidden",
+              }}
+            >
+              <SheetSelector
+                sheets={sheets}
+                selectedSheet={selectedSheet}
+                onSelect={handleSelectSheet}
+                onRefresh={loadSheets}
+                isLoading={isSheetsLoading}
+              />
+            </div>
+            <div style={{ flex: 1, overflow: "hidden" }}>
+              <SheetEditor value={sheetText} onChange={setSheetText} />
+            </div>
+          </div>
+        )}
+
+        <div
+          style={{
+            flex: 1,
+            position: "relative",
+            display: mode === "piano-roll" ? "block" : "none",
+          }}
+        >
           <iframe
             ref={iframeRef}
-            src="./signal/edit.html"
+            src="./signal/edit.html?embed=true"
             style={{
               width: "100%",
               height: "100%",
@@ -193,6 +250,32 @@ function App() {
             allow="midi; autoplay"
           />
         </div>
+
+        {mode === "editor" && (
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#585b70",
+              fontSize: "14px",
+              gap: "8px",
+            }}
+          >
+            {!songLoaded ? (
+              <span>Select a sheet and click Import to get started</span>
+            ) : (
+              <>
+                <span>Playing in background</span>
+                <span style={{ fontSize: "12px", color: "#45475a" }}>
+                  Switch to Piano Roll to view
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
