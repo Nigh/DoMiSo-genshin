@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -123,4 +126,116 @@ func TestLoadSheet_ParseRoundTrip(t *testing.T) {
 			t.Logf("'%s': %d chars -> %d bytes MIDI", sheet.Name, len(content), len(midiBytes))
 		})
 	}
+}
+
+func TestParseSheetStats(t *testing.T) {
+	svc := &AppService{}
+
+	sheet := `1=C 4/4 80
+1 2 3 4 | 5 6 7 1`
+
+	stats, err := svc.ParseSheetStats(sheet)
+	if err != nil {
+		t.Fatalf("ParseSheetStats failed: %v", err)
+	}
+
+	if stats.NoteCount == 0 {
+		t.Fatal("Expected non-zero note count")
+	}
+	if stats.BPM != 80 {
+		t.Fatalf("Expected BPM 80, got %d", stats.BPM)
+	}
+	t.Logf("Stats: %d notes, %.2f measures, %.2f sec, BPM=%d",
+		stats.NoteCount, stats.MeasureCount, stats.DurationSec, stats.BPM)
+}
+
+func TestImportSheet_JSON(t *testing.T) {
+	svc := &AppService{}
+	tmpDir := t.TempDir()
+
+	sheet := SheetJSON{
+		Version: 1,
+		Meta: SheetMeta{
+			Title:    "Test Song",
+			Composer: "Test Composer",
+		},
+		Notation: "1=C 4/4 80\n1 2 3 4",
+	}
+	data, _ := json.Marshal(sheet)
+	jsonPath := filepath.Join(tmpDir, "test.json")
+	os.WriteFile(jsonPath, data, 0644)
+
+	result, err := svc.ImportSheet(jsonPath)
+	if err != nil {
+		t.Fatalf("ImportSheet failed: %v", err)
+	}
+	if result.Format != "json" {
+		t.Fatalf("Expected format 'json', got '%s'", result.Format)
+	}
+	if result.Meta.Title != "Test Song" {
+		t.Fatalf("Expected title 'Test Song', got '%s'", result.Meta.Title)
+	}
+	if result.Content != "1=C 4/4 80\n1 2 3 4" {
+		t.Fatalf("Content mismatch: %s", result.Content)
+	}
+}
+
+func TestImportSheet_TXT(t *testing.T) {
+	svc := &AppService{}
+	tmpDir := t.TempDir()
+
+	txtPath := filepath.Join(tmpDir, "test.txt")
+	os.WriteFile(txtPath, []byte("标题: Test\n记谱: Me\n\n=====\n1=C\n1 2 3 4"), 0644)
+
+	result, err := svc.ImportSheet(txtPath)
+	if err != nil {
+		t.Fatalf("ImportSheet failed: %v", err)
+	}
+	if result.Format != "txt" {
+		t.Fatalf("Expected format 'txt', got '%s'", result.Format)
+	}
+}
+
+func TestExportSheet_JSON(t *testing.T) {
+	svc := &AppService{}
+	tmpDir := t.TempDir()
+
+	jsonPath := filepath.Join(tmpDir, "export.json")
+	meta := SheetMeta{Title: "Export Test", Composer: "Tester"}
+	err := svc.ExportSheet(jsonPath, meta, "1=C\n1 2 3 4")
+	if err != nil {
+		t.Fatalf("ExportSheet failed: %v", err)
+	}
+
+	data, _ := os.ReadFile(jsonPath)
+	var sheet SheetJSON
+	json.Unmarshal(data, &sheet)
+	if sheet.Meta.Title != "Export Test" {
+		t.Fatalf("Expected title 'Export Test', got '%s'", sheet.Meta.Title)
+	}
+	if sheet.Notation != "1=C\n1 2 3 4" {
+		t.Fatalf("Notation mismatch")
+	}
+	if sheet.Version != 1 {
+		t.Fatalf("Expected version 1, got %d", sheet.Version)
+	}
+}
+
+func TestExportSheet_TXT(t *testing.T) {
+	svc := &AppService{}
+	tmpDir := t.TempDir()
+
+	txtPath := filepath.Join(tmpDir, "export.txt")
+	meta := SheetMeta{Title: "Export Test", Composer: "Tester"}
+	err := svc.ExportSheet(txtPath, meta, "1=C\n1 2 3 4")
+	if err != nil {
+		t.Fatalf("ExportSheet failed: %v", err)
+	}
+
+	data, _ := os.ReadFile(txtPath)
+	content := string(data)
+	if len(content) == 0 {
+		t.Fatal("Exported file is empty")
+	}
+	t.Logf("Exported TXT:\n%s", content)
 }

@@ -4,7 +4,7 @@ import type { PlayerState } from "../bridge/signal-bridge"
 export type AppMode = "piano-roll" | "editor"
 
 interface ToolbarProps {
-  onImport: () => void
+  onSync: () => void
   isLoading: boolean
   signalReady: boolean
   statusMessage: string
@@ -15,10 +15,12 @@ interface ToolbarProps {
   onPlay: () => void
   onStop: () => void
   onSeek: (tick: number) => void
+  onImportFile: () => void
+  onExportFile: () => void
 }
 
 export function Toolbar({
-  onImport,
+  onSync,
   isLoading,
   signalReady,
   statusMessage,
@@ -29,6 +31,8 @@ export function Toolbar({
   onPlay,
   onStop,
   onSeek,
+  onImportFile,
+  onExportFile,
 }: ToolbarProps) {
   const isPlaying = playerState?.isPlaying ?? false
   const position = playerState?.position ?? 0
@@ -70,24 +74,6 @@ export function Toolbar({
         flexShrink: 0,
       }}
     >
-      <button
-        onClick={onImport}
-        disabled={isLoading || !signalReady}
-        style={{
-          padding: "6px 16px",
-          border: "none",
-          borderRadius: "4px",
-          backgroundColor: isLoading || !signalReady ? "#45475a" : "#89b4fa",
-          color: "#1e1e2e",
-          fontWeight: 600,
-          fontSize: "13px",
-          cursor: isLoading || !signalReady ? "not-allowed" : "pointer",
-          fontFamily: "inherit",
-        }}
-      >
-        {isLoading ? "Parsing..." : "Import"}
-      </button>
-
       <div
         style={{
           display: "flex",
@@ -96,21 +82,6 @@ export function Toolbar({
           border: "1px solid #313244",
         }}
       >
-        <button
-          onClick={() => onModeChange("piano-roll")}
-          style={{
-            padding: "5px 12px",
-            border: "none",
-            backgroundColor: mode === "piano-roll" ? "#89b4fa" : "#1e1e2e",
-            color: mode === "piano-roll" ? "#1e1e2e" : "#a6adc8",
-            fontSize: "12px",
-            fontWeight: 600,
-            cursor: "pointer",
-            fontFamily: "inherit",
-          }}
-        >
-          Piano Roll
-        </button>
         <button
           onClick={() => onModeChange("editor")}
           style={{
@@ -126,7 +97,77 @@ export function Toolbar({
         >
           Editor
         </button>
+        <button
+          onClick={() => onModeChange("piano-roll")}
+          style={{
+            padding: "5px 12px",
+            border: "none",
+            backgroundColor: mode === "piano-roll" ? "#89b4fa" : "#1e1e2e",
+            color: mode === "piano-roll" ? "#1e1e2e" : "#a6adc8",
+            fontSize: "12px",
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Piano
+        </button>
       </div>
+
+      <div style={{ width: "1px", height: "20px", backgroundColor: "#313244" }} />
+
+      <button
+        onClick={onImportFile}
+        style={{
+          padding: "5px 12px",
+          border: "1px solid #313244",
+          borderRadius: "4px",
+          backgroundColor: "#1e1e2e",
+          color: "#a6adc8",
+          fontSize: "12px",
+          fontWeight: 600,
+          cursor: "pointer",
+          fontFamily: "inherit",
+        }}
+      >
+        Open
+      </button>
+      <button
+        onClick={onExportFile}
+        style={{
+          padding: "5px 12px",
+          border: "1px solid #313244",
+          borderRadius: "4px",
+          backgroundColor: "#1e1e2e",
+          color: "#a6adc8",
+          fontSize: "12px",
+          fontWeight: 600,
+          cursor: "pointer",
+          fontFamily: "inherit",
+        }}
+      >
+        Save
+      </button>
+
+      <div style={{ width: "1px", height: "20px", backgroundColor: "#313244" }} />
+
+      <button
+        onClick={onSync}
+        disabled={isLoading || !signalReady}
+        style={{
+          padding: "5px 14px",
+          border: "none",
+          borderRadius: "4px",
+          backgroundColor: isLoading || !signalReady ? "#45475a" : "#89b4fa",
+          color: "#1e1e2e",
+          fontWeight: 600,
+          fontSize: "12px",
+          cursor: isLoading || !signalReady ? "not-allowed" : "pointer",
+          fontFamily: "inherit",
+        }}
+      >
+        {isLoading ? "Parsing..." : "Sync to Piano"}
+      </button>
 
       <div
         style={{
@@ -156,7 +197,7 @@ export function Toolbar({
           }}
           title={isPlaying ? "Pause" : "Play"}
         >
-          {isPlaying ? "❚❚" : "▶"}
+          {isPlaying ? "\u275A\u275A" : "\u25B6"}
         </button>
         <button
           onClick={onStop}
@@ -177,7 +218,7 @@ export function Toolbar({
           }}
           title="Stop"
         >
-          ■
+          {"\u25A0"}
         </button>
       </div>
 

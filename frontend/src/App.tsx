@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { SheetEditor } from "./components/SheetEditor"
+import { CodeEditor } from "./components/CodeEditor"
 import { SheetSelector } from "./components/SheetSelector"
+import { MetaEditor } from "./components/MetaEditor"
+import { StatusBar } from "./components/StatusBar"
 import { Toolbar, type AppMode } from "./components/Toolbar"
 import {
   createSignalBridge,
   type PlayerState,
   type SignalBridge,
 } from "./bridge/signal-bridge"
-import { AppService, SheetInfo } from "../bindings/domiso-universal"
+import { AppService, SheetInfo, SheetMeta, SheetStats } from "../bindings/domiso-universal"
+import { Dialogs } from "@wailsio/runtime"
 
 function base64ToUint8Array(base64: string): Uint8Array {
   const binaryString = atob(base64)
@@ -18,8 +21,47 @@ function base64ToUint8Array(base64: string): Uint8Array {
   return bytes
 }
 
+const emptyMeta: SheetMeta = {
+  title: "",
+  composer: "",
+  arranger: "",
+  description: "",
+  tempo: "",
+  timeSig: "",
+  key: "",
+}
+
+function normalizeLineEndings(s: string): string {
+  return s.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+}
+
+function parseHeaderMeta(text: string): SheetMeta {
+  const lines = text.split("\n")
+  const meta = { ...emptyMeta }
+  for (const line of lines) {
+    if (/^\s*={5,}\s*$/.test(line)) break
+    const colonIdx = line.indexOf(":")
+    if (colonIdx <= 0 || colonIdx > 10) continue
+    const key = line.substring(0, colonIdx).trim()
+    const val = line.substring(colonIdx + 1).trim()
+    switch (key) {
+      case "标题":
+        meta.title = val
+        break
+      case "记谱":
+        meta.composer = val
+        break
+      case "编曲":
+        meta.arranger = val
+        break
+    }
+  }
+  return meta
+}
+
 function App() {
   const [sheetText, setSheetText] = useState("")
+  const [meta, setMeta] = useState<SheetMeta>({ ...emptyMeta })
   const [sheets, setSheets] = useState<SheetInfo[]>([])
   const [selectedSheet, setSelectedSheet] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -29,6 +71,8 @@ function App() {
   const [mode, setMode] = useState<AppMode>("editor")
   const [playerState, setPlayerState] = useState<PlayerState | null>(null)
   const [songLoaded, setSongLoaded] = useState(false)
+  const [sheetStats, setSheetStats] = useState<SheetStats | null>(null)
+  const [sheetFormat, setSheetFormat] = useState<string>("txt")
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const bridgeRef = useRef<SignalBridge | null>(null)
 
@@ -75,15 +119,15 @@ function App() {
       setPlayerState(state)
     })
 
-    bridge.onSongLoaded((meta) => {
+    bridge.onSongLoaded((songMeta) => {
       setSongLoaded(true)
       setPlayerState((prev) =>
         prev
-          ? { ...prev, endOfSong: meta.endOfSong }
+          ? { ...prev, endOfSong: songMeta.endOfSong }
           : {
               isPlaying: false,
               position: 0,
-              endOfSong: meta.endOfSong,
+              endOfSong: songMeta.endOfSong,
               tempo: 120,
               mbtTime: "1:1:0",
             },
@@ -95,12 +139,33 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!sheetText.trim()) {
+      setSheetStats(null)
+      return
+    }
+    let cancelled = false
+    AppService.ParseSheetStats(sheetText)
+      .then((stats) => {
+        if (!cancelled) setSheetStats(stats as SheetStats)
+      })
+      .catch(() => {
+        if (!cancelled) setSheetStats(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [sheetText])
+
   const handleSelectSheet = useCallback(
     async (sheet: SheetInfo) => {
       setSelectedSheet(sheet.path)
       try {
         const content = await AppService.LoadSheet(sheet.path)
-        setSheetText(content)
+        const normalized = normalizeLineEndings(content)
+        setSheetText(normalized)
+        setMeta(parseHeaderMeta(normalized))
+        setSheetFormat("txt")
       } catch (err) {
         console.error("Failed to load sheet:", err)
         setStatusMessage(`Error: Failed to load ${sheet.name}`)
@@ -109,9 +174,9 @@ function App() {
     [],
   )
 
-  const handleImport = useCallback(async () => {
+  const handleSync = useCallback(async () => {
     if (!sheetText.trim()) {
-      setStatusMessage("Error: No sheet content to import")
+      setStatusMessage("Error: No sheet content to sync")
       return
     }
     if (!bridgeRef.current) {
@@ -134,6 +199,55 @@ function App() {
       setStatusMessage(`Error: ${(err as Error).message ?? "Parse failed"}`)
     }
   }, [sheetText])
+
+  const handleImportFile = useCallback(async () => {
+    try {
+      const filePath = await Dialogs.OpenFile({
+        Title: "Open Sheet",
+        Filters: [
+          { DisplayName: "All Supported", Pattern: "*.txt;*.json;*.dms" },
+          { DisplayName: "DoMiSo Text", Pattern: "*.txt" },
+          { DisplayName: "JSON Sheet", Pattern: "*.json" },
+          { DisplayName: "DMS Encrypted", Pattern: "*.dms" },
+        ],
+      })
+      if (!filePath) return
+
+      const result = (await AppService.ImportSheet(filePath)) as {
+        content: string
+        meta: SheetMeta
+        format: string
+      }
+      setSheetText(normalizeLineEndings(result.content))
+      setMeta(result.meta)
+      setSheetFormat(result.format)
+      setSelectedSheet(null)
+      setStatusMessage(`Loaded: ${filePath.split(/[/\\]/).pop()}`)
+    } catch (err) {
+      console.error("Import error:", err)
+      setStatusMessage(`Error: ${(err as Error).message ?? "Import failed"}`)
+    }
+  }, [])
+
+  const handleExportFile = useCallback(async () => {
+    try {
+      const filePath = await Dialogs.SaveFile({
+        Title: "Save Sheet",
+        Filename: meta.title ? `${meta.title}.json` : "sheet.json",
+        Filters: [
+          { DisplayName: "JSON Sheet", Pattern: "*.json" },
+          { DisplayName: "DoMiSo Text", Pattern: "*.txt" },
+        ],
+      })
+      if (!filePath) return
+
+      await AppService.ExportSheet(filePath, meta, sheetText)
+      setStatusMessage(`Saved: ${filePath.split(/[/\\]/).pop()}`)
+    } catch (err) {
+      console.error("Export error:", err)
+      setStatusMessage(`Error: ${(err as Error).message ?? "Export failed"}`)
+    }
+  }, [meta, sheetText])
 
   const handlePlay = useCallback(() => {
     bridgeRef.current?.play()
@@ -160,7 +274,7 @@ function App() {
       }}
     >
       <Toolbar
-        onImport={handleImport}
+        onSync={handleSync}
         isLoading={isLoading}
         signalReady={signalReady}
         statusMessage={statusMessage}
@@ -171,6 +285,8 @@ function App() {
         onPlay={handlePlay}
         onStop={handleStop}
         onSeek={handleSeek}
+        onImportFile={handleImportFile}
+        onExportFile={handleExportFile}
       />
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
@@ -179,10 +295,11 @@ function App() {
             style={{
               display: "flex",
               flexDirection: "column",
-              width: "400px",
-              minWidth: "300px",
+              width: "320px",
+              minWidth: "240px",
               borderRight: "1px solid #313244",
               flexShrink: 0,
+              overflow: "hidden",
             }}
           >
             <div
@@ -210,7 +327,7 @@ function App() {
             </div>
             <div
               style={{
-                height: "200px",
+                height: "180px",
                 borderBottom: "1px solid #313244",
                 flexShrink: 0,
                 overflow: "hidden",
@@ -224,8 +341,14 @@ function App() {
                 isLoading={isSheetsLoading}
               />
             </div>
-            <div style={{ flex: 1, overflow: "hidden" }}>
-              <SheetEditor value={sheetText} onChange={setSheetText} />
+            <div
+              style={{
+                flex: 1,
+                overflow: "hidden",
+                borderTop: "1px solid #313244",
+              }}
+            >
+              <MetaEditor meta={meta} onChange={setMeta} />
             </div>
           </div>
         )}
@@ -257,23 +380,13 @@ function App() {
               flex: 1,
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#585b70",
-              fontSize: "14px",
-              gap: "8px",
+              overflow: "hidden",
             }}
           >
-            {!songLoaded ? (
-              <span>Select a sheet and click Import to get started</span>
-            ) : (
-              <>
-                <span>Playing in background</span>
-                <span style={{ fontSize: "12px", color: "#45475a" }}>
-                  Switch to Piano Roll to view
-                </span>
-              </>
-            )}
+            <div style={{ flex: 1, overflow: "hidden" }}>
+              <CodeEditor value={sheetText} onChange={setSheetText} />
+            </div>
+            <StatusBar stats={sheetStats} format={sheetFormat} />
           </div>
         )}
       </div>
