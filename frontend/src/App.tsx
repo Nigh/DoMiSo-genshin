@@ -99,7 +99,7 @@ function App() {
     async (sheet: SheetInfo) => {
       setSelectedSheet(sheet.path)
       try {
-        const content = await AppService.LoadSheet(sheet.name)
+        const content = await AppService.LoadSheet(sheet.path)
         setSheetText(content)
       } catch (err) {
         console.error("Failed to load sheet:", err)

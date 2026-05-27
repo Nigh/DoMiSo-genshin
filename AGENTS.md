@@ -143,7 +143,7 @@ pm run build (in rontend/)
 - **Never commit** signal/app/public/soundfonts/*.sf2 — downloaded during build
 - **Never commit** signal/node_modules/ or signal/app/dist/
 - The ree_sheets/ directory IS committed — its contents are embedded into the binary
-- Go's mbed.FS does not accept filenames with ' (apostrophe) — keep filenames clean
+- Go's `embed.FS` does not accept filenames with `'` (ASCII apostrophe U+0027) — use Unicode MODIFIER LETTER APOSTROPHE `ʼ` (U+02BC) in filenames instead, and `unescapeSheetName()` in `app.go` converts it back to `'` for display
 - signal/ is a git submodule — modifications go to git@github.com:Nigh/signal.git
 - Signal's @signal-app/core exports TypeScript source (no build step needed)
 - Signal's @signal-app/player requires 	sc build before the app can build

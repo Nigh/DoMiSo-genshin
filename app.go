@@ -15,6 +15,22 @@ import (
 //go:embed all:free_sheets
 var sampleSheets embed.FS
 
+var sheetNameReplacements = map[rune]string{
+	'\u02BC': "'",
+}
+
+func unescapeSheetName(name string) string {
+	var b strings.Builder
+	for _, r := range name {
+		if replacement, ok := sheetNameReplacements[r]; ok {
+			b.WriteString(replacement)
+		} else {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
 type AppService struct{}
 
 type SheetInfo struct {
@@ -49,7 +65,7 @@ func (a *AppService) ListFreeSheets() ([]SheetInfo, error) {
 		name := entry.Name()
 		if strings.HasSuffix(strings.ToLower(name), ".txt") {
 			sheets = append(sheets, SheetInfo{
-				Name: name,
+				Name: unescapeSheetName(name),
 				Path: path.Join("free_sheets", name),
 			})
 		}

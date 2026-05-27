@@ -84,7 +84,7 @@ func TestLoadSheet(t *testing.T) {
 		t.Skip("No sheets to test")
 	}
 
-	content, err := svc.LoadSheet(sheets[0].Name)
+	content, err := svc.LoadSheet(sheets[0].Path)
 	if err != nil {
 		t.Fatalf("LoadSheet failed: %v", err)
 	}
@@ -106,7 +106,7 @@ func TestLoadSheet_ParseRoundTrip(t *testing.T) {
 
 	for _, sheet := range sheets {
 		t.Run(sheet.Name, func(t *testing.T) {
-			content, err := svc.LoadSheet(sheet.Name)
+			content, err := svc.LoadSheet(sheet.Path)
 			if err != nil {
 				t.Fatalf("LoadSheet failed: %v", err)
 			}
