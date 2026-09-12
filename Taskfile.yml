@@ -31,14 +31,7 @@ tasks:
   dev:
     summary: Runs the application in development mode
     cmds:
-      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
-
-  build:signal:
-    summary: Build the signal piano roll (must run before frontend build)
-    dir: signal
-    cmds:
-      - npm install
-      - npm run build -w packages/player
-      - npm run build -w packages/dialog-hooks
-      - npm run build -w app
-      - pwsh -Command "Copy-Item -Path 'app/dist/*' -Destination '../frontend/public/signal' -Recurse -Force"
+      - cmd: powershell -NoProfile -ExecutionPolicy Bypass -File build/dev.ps1
+        platforms: [windows]
+      - cmd: wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+        platforms: [linux, darwin]

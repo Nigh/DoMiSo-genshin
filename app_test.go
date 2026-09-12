@@ -202,7 +202,7 @@ func TestExportSheet_JSON(t *testing.T) {
 
 	jsonPath := filepath.Join(tmpDir, "export.json")
 	meta := SheetMeta{Title: "Export Test", Composer: "Tester"}
-	err := svc.ExportSheet(jsonPath, meta, "1=C\n1 2 3 4")
+	err := svc.ExportSheet(jsonPath, meta, "1=C\n1 2 3 4", "", false)
 	if err != nil {
 		t.Fatalf("ExportSheet failed: %v", err)
 	}
@@ -216,8 +216,8 @@ func TestExportSheet_JSON(t *testing.T) {
 	if sheet.Notation != "1=C\n1 2 3 4" {
 		t.Fatalf("Notation mismatch")
 	}
-	if sheet.Version != 1 {
-		t.Fatalf("Expected version 1, got %d", sheet.Version)
+	if sheet.Version != 2 || sheet.MIDI != "" || sheet.NotationOutOfSync {
+		t.Fatalf("unexpected text-only sheet: %+v", sheet)
 	}
 }
 
@@ -227,7 +227,7 @@ func TestExportSheet_TXT(t *testing.T) {
 
 	txtPath := filepath.Join(tmpDir, "export.txt")
 	meta := SheetMeta{Title: "Export Test", Composer: "Tester"}
-	err := svc.ExportSheet(txtPath, meta, "1=C\n1 2 3 4")
+	err := svc.ExportSheet(txtPath, meta, "1=C\n1 2 3 4", "", false)
 	if err != nil {
 		t.Fatalf("ExportSheet failed: %v", err)
 	}
@@ -238,4 +238,29 @@ func TestExportSheet_TXT(t *testing.T) {
 		t.Fatal("Exported file is empty")
 	}
 	t.Logf("Exported TXT:\n%s", content)
+}
+
+func TestExportSheet_EditedMIDIRoundTrip(t *testing.T) {
+	svc := &AppService{}
+	filePath := filepath.Join(t.TempDir(), "edited.json")
+	midi := "TVRoZAAAAAYAAQABAeBNVHJrAAAABAD/LwA="
+	if err := svc.ExportSheet(filePath, SheetMeta{Title: "Edited"}, "1 2", midi, true); err != nil {
+		t.Fatal(err)
+	}
+	result, err := svc.ImportSheet(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.MIDI != midi || !result.NotationOutOfSync || result.Content != "1 2" {
+		t.Fatalf("unexpected round trip: %+v", result)
+	}
+}
+
+func TestExportSheet_RejectsEditedMIDIAsText(t *testing.T) {
+	svc := &AppService{}
+	midi := "TVRoZAAAAAYAAQABAeBNVHJrAAAABAD/LwA="
+	err := svc.ExportSheet(filepath.Join(t.TempDir(), "edited.txt"), SheetMeta{}, "1", midi, true)
+	if err == nil {
+		t.Fatal("expected edited MIDI text export to fail")
+	}
 }

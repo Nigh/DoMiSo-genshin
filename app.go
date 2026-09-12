@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -43,19 +44,21 @@ type SheetInfo struct {
 }
 
 type SheetMeta struct {
-	Title        string `json:"title"`
-	Composer     string `json:"composer"`
-	Arranger     string `json:"arranger"`
-	Description  string `json:"description"`
-	Tempo        string `json:"tempo"`
-	TimeSig      string `json:"timeSig"`
-	Key          string `json:"key"`
+	Title       string `json:"title"`
+	Composer    string `json:"composer"`
+	Arranger    string `json:"arranger"`
+	Description string `json:"description"`
+	Tempo       string `json:"tempo"`
+	TimeSig     string `json:"timeSig"`
+	Key         string `json:"key"`
 }
 
 type SheetJSON struct {
-	Version  int       `json:"version"`
-	Meta     SheetMeta `json:"meta"`
-	Notation string    `json:"notation"`
+	Version           int       `json:"version"`
+	Meta              SheetMeta `json:"meta"`
+	Notation          string    `json:"notation,omitempty"`
+	MIDI              string    `json:"midi,omitempty"`
+	NotationOutOfSync bool      `json:"notationOutOfSync,omitempty"`
 }
 
 type SheetStats struct {
@@ -67,9 +70,11 @@ type SheetStats struct {
 }
 
 type ImportResult struct {
-	Content string    `json:"content"`
-	Meta    SheetMeta `json:"meta"`
-	Format  string    `json:"format"`
+	Content           string    `json:"content"`
+	Meta              SheetMeta `json:"meta"`
+	Format            string    `json:"format"`
+	MIDI              string    `json:"midi,omitempty"`
+	NotationOutOfSync bool      `json:"notationOutOfSync,omitempty"`
 }
 
 func (a *AppService) ParseTextToMIDI(text string) ([]byte, error) {
@@ -159,12 +164,25 @@ func (a *AppService) ImportSheet(filePath string) (ImportResult, error) {
 			return ImportResult{}, fmt.Errorf("invalid JSON format: %w", err)
 		}
 		if sheet.Notation == "" {
-			return ImportResult{}, fmt.Errorf("JSON sheet has no notation content")
+			if sheet.MIDI == "" {
+				return ImportResult{}, fmt.Errorf("JSON sheet has neither MIDI nor notation content")
+			}
+		}
+		if sheet.MIDI != "" {
+			midi, err := base64.StdEncoding.DecodeString(sheet.MIDI)
+			if err != nil || len(midi) < 4 || string(midi[:4]) != "MThd" {
+				return ImportResult{}, fmt.Errorf("JSON sheet contains invalid MIDI data")
+			}
+		}
+		if sheet.NotationOutOfSync && sheet.MIDI == "" {
+			return ImportResult{}, fmt.Errorf("out-of-sync notation requires MIDI data")
 		}
 		return ImportResult{
-			Content: sheet.Notation,
-			Meta:    sheet.Meta,
-			Format:  "json",
+			Content:           sheet.Notation,
+			Meta:              sheet.Meta,
+			Format:            "json",
+			MIDI:              sheet.MIDI,
+			NotationOutOfSync: sheet.NotationOutOfSync,
 		}, nil
 	}
 
@@ -180,20 +198,34 @@ func (a *AppService) ImportSheet(filePath string) (ImportResult, error) {
 	}, nil
 }
 
-func (a *AppService) ExportSheet(filePath string, meta SheetMeta, notation string) error {
+func (a *AppService) ExportSheet(filePath string, meta SheetMeta, notation, midi string, notationOutOfSync bool) error {
 	ext := strings.ToLower(filepath.Ext(filePath))
+	if notationOutOfSync && midi == "" {
+		return fmt.Errorf("out-of-sync notation requires MIDI data")
+	}
+	if midi != "" {
+		data, err := base64.StdEncoding.DecodeString(midi)
+		if err != nil || len(data) < 4 || string(data[:4]) != "MThd" {
+			return fmt.Errorf("invalid MIDI data")
+		}
+	}
 
 	if ext == ".json" {
 		sheet := SheetJSON{
-			Version:  1,
-			Meta:     meta,
-			Notation: notation,
+			Version:           2,
+			Meta:              meta,
+			Notation:          notation,
+			MIDI:              midi,
+			NotationOutOfSync: notationOutOfSync,
 		}
 		data, err := json.MarshalIndent(sheet, "", "  ")
 		if err != nil {
 			return fmt.Errorf("failed to encode JSON: %w", err)
 		}
 		return os.WriteFile(filePath, data, 0644)
+	}
+	if midi != "" {
+		return fmt.Errorf("edited MIDI must be saved as a JSON project")
 	}
 
 	var buf strings.Builder
@@ -260,4 +292,25 @@ func (a *AppService) FormatDuration(seconds float64) string {
 	mins := int(d.Minutes())
 	secs := int(d.Seconds()) % 60
 	return fmt.Sprintf("%d:%02d", mins, secs)
+}
+
+func (a *AppService) ImportGameProfile(filePath string) (string, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read profile: %w", err)
+	}
+	if len(data) > 1024*1024 {
+		return "", fmt.Errorf("profile is larger than 1MB")
+	}
+	if !json.Valid(data) {
+		return "", fmt.Errorf("invalid profile JSON")
+	}
+	return string(data), nil
+}
+
+func (a *AppService) ExportGameProfile(filePath, profileJSON string) error {
+	if len(profileJSON) > 1024*1024 || !json.Valid([]byte(profileJSON)) {
+		return fmt.Errorf("invalid profile JSON")
+	}
+	return os.WriteFile(filePath, []byte(profileJSON), 0644)
 }

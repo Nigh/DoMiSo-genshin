@@ -27,6 +27,8 @@ $RECYCLE.BIN/
 
 # Node
 node_modules/
+frontend/app/public/soundfonts/*.sf2
+frontend/packages/*/dist/
 
 # Go build output
 bin/

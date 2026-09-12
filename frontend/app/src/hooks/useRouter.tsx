@@ -1,0 +1,15 @@
+import { atom, useAtomValue, useSetAtom } from "jotai"
+
+export type RoutePath = "/track" | "/tempo"
+
+export function useRouter() {
+  return {
+    get path() {
+      return useAtomValue(pathAtom)
+    },
+    setPath: useSetAtom(pathAtom),
+  }
+}
+
+// atoms
+const pathAtom = atom<RoutePath>("/track")
